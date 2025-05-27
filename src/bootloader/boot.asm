@@ -75,7 +75,7 @@ start_boot:
 ;	mul	cx,[sect_per_fat]	;contains the fat region in sectors-1 because we forgot to add the boot sector
 ;	add	cx,1			;contains the fat region in sectors
 ;	mul	cx,[bytes_per_sect]	;contains the byte address
-
+;
 
 .loop:
 	
