@@ -1,3 +1,4 @@
+;jesus is the way the truth and life.
 org		0x7c00
 bits	16
 
@@ -53,12 +54,12 @@ read_sector:
 .error_handling:
 	ret
 
-;setup_:
+setup_:
 ;set all register in condition expected by the system
 ;jmp control to region in ram that stores the buffer of kernel.bin
 ;so that cpu exectues it
-;	ret
-;kern:	db		"KERNEL   BIN"
+	ret
+kern:	db		"KERNEL  BIN"
 start_boot:
 ;reseverd sector number =1
 ;fat region=no_fat*sect_per_fat
@@ -110,7 +111,7 @@ print:
 	pop		ax
 	ret
 msg:	db 'success',0
-msg1:	db  'fail',0
+;msg1:	db  'fail',0
 ;error_handling:
 ;	mov	si,msg1
 ;	call	print
