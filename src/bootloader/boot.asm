@@ -38,21 +38,24 @@ nop
 ;DH = Head number (0-1 for a floppy disk)
 ;DL = Drive number (0 for first floppy, 1 for second)
 ;ES:BX = Buffer address → Where data should be stored
-
+error:  db    "err",0
 ;expects sector number in cl and buffer location to be in bx
 read_sector:
 	pusha
 	mov		ah,0x02
 	mov		al,1			;no ofsector tobe read	
-	mov 		dl,[drive_no]		
-	mov 		dh,0x0			;head
+	mov 	dl,[drive_no]		
+	mov 	dh,0x0			;head
 	mov		ch,0x0 			;cylinder
 
 	INT		0x13
 	jc		.error_handling
 	popa
+  ret
 .error_handling:
-	ret
+  mov   si,error
+  call  print
+  hlt
 
 setup_:
 ;set all register in condition expected by the system
@@ -74,17 +77,35 @@ start_boot:
 	mul	bl
 	add	cl,al
 	;calculate the total number of sectors in root dir
+  ;size of a single directory entry in bytes is 32
 	mov	ax,[root_dir_entries]
-	mov	bx,28
-	mul	bx
+	mov	bx,32
+	mul	bx    ;at this point ax contains number of sectors in bytes
 	mov	bx,512
 	div	bx	;at this point number ofsectors in root dir is at ax
 .loop:
 	mov	bx,0x0500
 	call	read_sector
 	;compare from here
+.preloop:
+  pusha                         ;pushes all registers to stack
+  mov   si,kern                 ;mov "KERNEL   BIN" address to source(constat throughout the loop)
+  mov   cx,11                   ;mov number of bytes to be compared to cx(constant throughout the loop)
+  mov   bx,[root_dir_entries]   ;to set number of times we have to read(not constant)
+  mov   dx,0x0500               ;set destinantion address(not constant will be incremented by 28)
+.in_loop:
+  repe  cmpsb                   ;compare 11 bytes of starting dx and kern
+  jz    found                  ;if matchfound jump .found
+  add   dx,32                   ;else increment 28 bytes(name of next directory entry)
+  ;code to decrement the count of dx and check if target value hit 0 to break out
+  dec   bx
+  test  bx,bx
+  jnz   .in_loop
+.exit_in_loop:
+  popa
 	inc	cl
 	cmp	cl,al
+ ; jmp found
 	jle	.loop
 	ret
 
@@ -93,21 +114,21 @@ start_boot:
 ;expects string data in si
 ;INT 0x10, AH = 0xE,AL=char val,bh=0x0 for printing in BIOS
 print:
-	push  	ax	;ax=ah,al
+	push  ax	;ax=ah,al
 	push	bx
 	push 	si
 	mov		al,[si]
 .loop:
-	test 		al,al
+	test 	al,al
 	jz		.end
 	mov		ah,0x0e
-	mov 		bh,0x00
+	mov 	bh,0x00
 	INT		0x10
 	lodsb
 	jmp		.loop
 .end:
 	pop		si
-	pop 		bx
+	pop 	bx
 	pop		ax
 	ret
 msg:	db 'success',0
@@ -116,6 +137,10 @@ msg:	db 'success',0
 ;	mov	si,msg1
 ;	call	print
 ;	ret
+found:
+  mov   si,msg
+  call  print
+  
 main:
 	;set all segment registers to 0
 	;we cannot direcly push 
@@ -124,9 +149,7 @@ main:
 	mov		ds,ax
 	mov 	es,ax
 	mov 	sp,0x7c00
-
-	mov 	si,msg
-	call	print
+  call  start_boot
 	hlt
 .halt:
 	jmp 	.halt
