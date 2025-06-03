@@ -112,7 +112,7 @@ start_boot:
 ;call setup_l
 	mov	  cx,[no_res_sect] 
   ;dec   cx                ;lba starts from 0 but we have to add 1 anyways
-	mov	  ax,[fat_no]
+	mov	  al,[fat_no]
 	mov 	bx,[sect_per_fat]
 	mul	  bx
 	add	  cx,ax
@@ -129,6 +129,7 @@ start_boot:
   ;cx-start sect;bx-buflocation,ax-no of direntry
 	call	read_sector
 	;compare from here
+
 .preloop:
   pusha                         ;pushes all registers to stack
   mov   si,kern                 ;mov "KERNEL   BIN" address to source(constat throughout the loop)
@@ -147,7 +148,7 @@ start_boot:
   popa
 	inc	cl
 	cmp	cl,al
- ; jmp found
+  jmp found
 	jle	.loop
 	ret
 
