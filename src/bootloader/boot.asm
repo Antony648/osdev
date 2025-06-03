@@ -91,6 +91,7 @@ read_sector:
 	popa
   ret
 .error_handling:
+  popa
   mov   si,error
   call  print
   hlt
@@ -162,10 +163,10 @@ print:
 .loop:
 	test 	al,al
 	jz		.end
+	lodsb
 	mov		ah,0x0e
 	mov 	bh,0x00
 	INT		0x10
-	lodsb
 	jmp		.loop
 .end:
 	pop		si
