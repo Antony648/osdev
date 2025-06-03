@@ -1,1 +1,1 @@
-qemu-system-i386 -fda ./build/floppy_bootable.img
+qemu-system-i386 -fda ./build/floppy_bootable.img -monitor stdio

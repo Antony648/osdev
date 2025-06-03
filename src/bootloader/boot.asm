@@ -31,7 +31,7 @@ identifier_str:		db 	'fat12   '
 start:
 	jmp 	main
 nop
-;expects sector number in cl 
+;expects sector number in  lba cx
 ;buffer location to be in bx
 ;head no in dh
 ;cylinder no in ch
@@ -41,29 +41,23 @@ nop
 ;cylinder=lba/(s*h) 
 debug:  db    "debug",0
 lba_to_chs:
-  ;push  ax no need for ax storage as it will be overwritten anyways
   push  bx
-  
-  mov   ax,[heads]
-  mov   bx,[sect_per_track]
-  mul   bx
-  mov   bx,ax
+  xor   dx,dx
   mov   ax,cx
-  div   bx
-  mov   bx,ax
-
-  mov ax,cx   ;storing cx to ax for future use as it will be overwritten from here
-  mov ch,bl   ;ch contains cylinder number
-  mov bl,[sect_per_track]
-  div bl
-  ;ax contains lba/s, dx contains lba%s
-  mov cl,al
-  inc cl    ;cl contains sector number
-  mov bl,[heads]
-  div bl
-  mov dh,dl ;dh contains head ,no need to preserve dl
-  pop bx
-  ;pop ax
+  div   word [sect_per_track]
+  ;ax contains lba/sect_per_track
+  ;dx contains lba%sect_per_track
+  inc   dx
+  mov   cl,dl
+  xor   dx,dx
+  ;cl contains sector
+  div   word [heads]
+  mov   ch,al     ;stores lba/sect_per_track/heads in ch but only lower 8 bits 
+                  ;we might want to store upper 2 bits in the upper 2 bits of cl
+  shl   ah,6      ;lower 2 bits of ah becomes upper 2 bits
+  or    cl,ah     ;cl upper 2 bits are overwritten by ah 2 upper bits
+  mov   dh,dl
+  pop   bx
   ret
   
 ;expects name of file to be read in si
@@ -82,7 +76,11 @@ error:  db    "err",0
 ;buffer location to be in bx
 read_sector:
 	pusha
-  call  lba_to_chs  ;cylinder number at 
+  call  lba_to_chs  
+  ;sector number cl(0-5)
+  ;cylinder number ch, upper 2 excess bits(9,10 bits) stored as
+  ;upper two bits of cl
+  ;head stored at dh
 	mov		ah,0x02
 	mov		al,1			;no ofsector tobe read	
 	mov 	dl,[drive_no]		
