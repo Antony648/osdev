@@ -131,17 +131,17 @@ start_boot:
   ;cx-start sect;bx-buflocation,ax-no of direntry
 	call	read_sector
 	;compare from here
-.hlt:
-  jmp .hlt
 .preloop:
   pusha                         ;pushes all registers to stack
   mov   si,kern                 ;mov "KERNEL   BIN" address to source(constat throughout the loop)
   mov   cx,11                   ;mov number of bytes to be compared to cx(constant throughout the loop)
   mov   bx,[root_dir_entries]   ;to set number of times we have to read(not constant)
-  mov   dx,0x0500               ;set destinantion address(not constant will be incremented by 28)
+  mov   di,0x0500               ;set destinantion address(not constant will be incremented by 28)
+  cld
 .in_loop:
+  lea   dx,[di]
   repe  cmpsb                   ;compare 11 bytes of starting dx and kern
-  jz    found                  ;if matchfound jump .found
+  je    found                  ;if matchfound jump .found
   add   dx,32                   ;else increment 28 bytes(name of next directory entry)
   ;code to decrement the count of dx and check if target value hit 0 to break out
   dec   bx
@@ -185,6 +185,8 @@ msg:	db 'success',0
 found:
   mov   si,msg
   call  print
+.hlt:
+  jmp .hlt
   
 main:
 	;set all segment registers to 0
