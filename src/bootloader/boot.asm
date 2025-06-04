@@ -122,14 +122,17 @@ start_boot:
 	mov	ax,[root_dir_entries]
 	mov	bx,32
 	mul	bx    ;at this point ax contains number of sectors in bytes
+  xor dx,dx
 	mov	bx,512
-	div	bx	;at this point number ofsectors in root dir is at ax
+	div	bx	;at this point count ofsectors in root dir is at ax
+  add ax,cx
 .loop:
 	mov	bx,0x0500
   ;cx-start sect;bx-buflocation,ax-no of direntry
 	call	read_sector
 	;compare from here
-
+.hlt:
+  jmp .hlt
 .preloop:
   pusha                         ;pushes all registers to stack
   mov   si,kern                 ;mov "KERNEL   BIN" address to source(constat throughout the loop)
@@ -148,7 +151,6 @@ start_boot:
   popa
 	inc	cl
 	cmp	cl,al
-  jmp found
 	jle	.loop
 	ret
 
