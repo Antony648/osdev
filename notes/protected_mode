@@ -1,0 +1,30 @@
+PROTECTED MODE:
+	in our bootloader we worked in 16bit real mode, but our operating system is not supposed to work there, it works in 32bit real mode,
+it is a mode in x86 processors, here CPU works with full memory protection, virtual memory, multitasking, and privilege levels
+the use of protected mode is that it gives us more space like as it uses 32bit addressing, we have 2^32 possible addresses giving us upto 4GiB of ram usage, it gives us virutal address space for protecting process memory from one another, it also provides us with ring level or (privielge leves ),
+	so jumping from  bios bootloder in 16 bit real mode to 32 bit protected mode is very important,
+we have several layers or rings in operating systems.
+each ring corresponding to a particular level of privilege.
+higher the ring level lower the privilege.
+	ring0 :- kernel sits here, highest privillege
+	ring1:- comparitively lower privilege than ring0. generally device drivers sit here
+	ring2 :- lower privilege than ring1, drivers are also seen in this level.
+	ring3 :- lowest privilege, all user application softwares execute here
+privilege level helps to create classification on what programs can access what memory, it prevents user level programs from accessing kernel memory and kernel space, and prevents it from corrupting the system.
+
+if a user process wants to prefrom a kernel level opreation, it sents an interrupt(also refered to as syscalls) to the kernel, if the operating system (kernel and different protocols set up by it), allows that particular process at higher ring level, then the syscall is accepted and the request is full filled, so in this system a userlevel application can only request for a kernel level opreation, the ring0 (kernel) application decideds whether to allow it or not, thereby preventing application programs from corrupting kernel level applications. 
+ 
+
+MEMORY SCHEMES:-
+	i) segment to selectors:
+	all our segment registers become selectors (CS,DS,SS,ES), that is in protected mode, segment registers hold the starting address of corresponding segments, and it is left shifted by four bits( multiplied by 0x10,integer=16), and added with correspoding registers (IP,SP,BP) to calculate actual address. 
+In protected mode these segment registers contain the corresponding values form the GDT(global descriptor table), the structure of a selector, is as follows
+	BITS 0-1: requested privilege level.
+	BITS 2:   table indicator(0=GDT,1=LDT)
+	BITS 3-15:index into the descriptor table
+
+	ii) paging memory scheme:
+	it helps to implement virtual address , so this virtual address is mapped to  a physical address somewhere in ram, as all processes use virtual addresses memory protection is easier to control, it helps to map out the address spaces of user programs so it becomes impossible for a user program to see the memory address of other user programs ,
+
+we can use same virtual memory value to point to different memory locations at physical level. consider process1, having a virtual adress 0x7b00 ab23 , it looks at page table and is mapped to an address 0x2400 1200, now cpu accesses the value at there ,
+	consider another process2, of another program,having the same virtual address 0x7b00 ab23, but as page table is different the value mapped to this address physically will not be 0x2400 1200, assume it is 0x4567 8901, so at different programs having different page tables, virtual address have different physical address mappings, so it becomes impossible to access values of other processes, programs are isolated.

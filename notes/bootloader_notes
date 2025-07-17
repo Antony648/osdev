@@ -1,0 +1,6 @@
+in this folder i am trying to create a mininmal operating system with 16 bit bootloader and 32 bit protected mode kernel
+boot:
+ we set the org values to 0x7c00
+ as actual  bootloader gets loaded here in ram, and we use our bootloader to load the gdt to and jump to protected mode.
+ this is a very simple bootloader in an advanced one, i would like to create a function to write a number of bytes form iso file to a location in ram, and so thereby write gdt ouside the bootloader, then load gdt to a point in ram(hardcoded predified) and then pass it to lgdt command.
+but for now i am just  including it in my bootloader.
