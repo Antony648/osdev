@@ -1,0 +1,36 @@
+A20 gate:
+	in intel 8086, there were only 20 address lines(0-19) for memory bus, so total memory that could be addressed was 1MiB, because of segmented memory (segment:offset), some addresses would wraparound segmented memory
+
+segment:offset= 0xFFFF:0x0010=(0xFFFF<<4+0x0010) =0x100000
+
+but in in 8086, it would behave so as to give result 0x00000(because it jumps out of resolution, same way as integer overflow occurs or 2's complement addition takes place), DOS program relied on this wraparound feature,
+	but when later models were introduced, 80286 and 80386 were created, it introduced 21st address line (more than 1MiB of memory could be accessed), this caused crashes and unexpected behaviour with older DOS programs.
+ 
+As a solution  IBM introduced a gate that simply turns off the address line number 20(21st line, 20 because we count from 0),if disabled it would not allow access of memory above size of 1MiB, thereby mimicking the behaviour of 8086.
+it is generally set to low in Real mode and needs to be explicity set to high on converting to protected mode.
+
+there are several ways to do this:
+	i)bios interrupt  0x15, function 0x2401
+	ii)by setting bit1 of 0x92 to high
+we generally use the second option as it is convenient and preferred
+<nasm snippet begin>
+
+in 	al,0x92
+or	al,0x02
+out 	0x92,al
+<nasm snippet end>
+
+we just have to incorporate it along with it.
+
+THEORY FOR INTERESTED READERS:
+	to understand what is happening at a hardware level, we have to realise that 0x92 is a system port or I/Oport, it is an address of range
+0x0000 - 0xffff ,  system ports are used to read or write from hardware , they are specilised address distinct from ram, but they are mapped to devices connected to the computer
+they can only be accessed at ring0 (kernel level)
+
+PORT 		DEVICE
+0x60		keyboarddata port
+0x64		keyboard control
+0x92 		system port A
+0x3f8		com1 serial port
+
+these are some examples there are a wide variety of them. they  can be seen as address to which we can read and write value into but are not mapped to RAM, but instead are mapped to adapters associated to devices, consider  a keyboard connected to PS2, the keyboard data port(0x60) and keyboard control port(0x64), these are associated to ps2 adapter in the device which controls the keyboard send data from keyboard to cpu, if a key is pressed the correspoding code for letter will be generated and send to ps2 adapter of computer by keyboard,these values are obtained from cpu by using 0x60 from ps2 adapter similarly if cpu wants to change keyboard hardware attributes it does the same (sends data to keyboard via 0x64).

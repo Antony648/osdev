@@ -1,1 +1,1 @@
-qemu-system-i386 -fda ./build/floppy_bootable.img -monitor stdio
+qemu-system-x86_64 -hda ./build/bootloader/boot.bin 

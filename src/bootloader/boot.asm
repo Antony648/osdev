@@ -55,6 +55,10 @@ protected_mode:
 	mov 	fs,ax
 	mov	ebp, 0x00200000
 	mov 	esp,ebp
+
+	in	al,0x92
+	or	al,0x02
+	out 	0x92,al
 	jmp 	$
 
 times 510-($-$$) db 0
