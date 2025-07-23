@@ -1,0 +1,7 @@
+#!/bin/bash
+export PREFIX="$HOME/opt/cross"
+export TARGET=i686-elf
+export PATH="$PREFIX/bin:$PATH"
+make all
+
+we setupt the environment variables we setup during insatllation and setup of toolchain and create the make all in Make file
