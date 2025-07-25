@@ -1,5 +1,6 @@
 [BITS 32]
 global _start
+extern kernel_main
 _start:
 	mov	ax,0x10
 	mov	ss,ax
@@ -13,7 +14,7 @@ _start:
 	in	al,0x92
 	or	al,0x02
 	out	0x92,al
-
+	call	kernel_main
 	jmp $
 
 times 512-($-$$) db 0x0
