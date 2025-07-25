@@ -107,7 +107,7 @@ ata_lba_read:
 ;increment di by 2 and decrement cx by 1 and check if cx is 0 
 ;the cx part is done by rep, moving of 2 bytes from sector number in bin file to es:di in ram is done by insw
 	pop 	ecx	
-	add	edi,0x200
+;	add	edi,0x200
 	dec	ecx
 	jnz	.call_read_sect
 
