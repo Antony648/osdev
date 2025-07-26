@@ -1,6 +1,6 @@
 [BITS 32]
 global _start
-global problem
+
 extern kernel_main
 _start:
 	mov	ax,0x10
@@ -18,13 +18,7 @@ _start:
 	call	kernel_main
 	jmp $
 	
-problem:
-	;push	ebp
-	;mov		ebp,esp
-	
-	int  	0x20
-	;pop		ebp
-	;ret
+
 times 512-($-$$) db 0x0
 
 ;this is to ensure that the code occupies entire sector and not just some parts for eg if you add it behind the bootloader you will see that it just takes up some bytes it does not fillup the sector, this is not good because it will cause lot of alignment issues,

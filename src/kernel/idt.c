@@ -22,7 +22,7 @@ void setup_idt32IKC31(uint32_t interrupt_no, void* address)
 }
 void idt_init()
 {
-	print("calling idt_init\n");
+	
     memset(idt_table,0,sizeof(idt_table));	//clear descriptor table
     
     idtr_descriptor.len=sizeof(idt_table)-1; 
@@ -32,5 +32,6 @@ void idt_init()
 		//load address for ISR 0x00
     load_idtr(&idtr_descriptor);
 		//load value of idt table
+	print("interrupt descriptor table loaded\n");
 }
 
