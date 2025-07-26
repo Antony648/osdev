@@ -63,7 +63,14 @@ void print(char * str)
 				break;
 			default:
 				vedio[(cursor_y * VGA_WIDTH)+cursor_x]=simp_text_hex_gen(str[i],15);
+			/*	cursor_x++;
+				cursor_y+=(cursor_x/80)
+				cursor_x=(cursor_x)%80;*/
 				cursor_x++;
+				if(cursor_x>79)
+				{
+					cursor_y++;cursor_x=0;
+				}
 				break;
 		}
 	}
@@ -72,7 +79,7 @@ void kernel_main()
 {
 	clear_screen();
 	char str[13]="jesus";
-	print_string_x_y(str,40,2,15);
+	print_string_x_y(str,40,9,15);
 	char str1[76]="hello friend\nHello, friend? Thats lame.Maybe I should give you a name ";
 	print(str1);
 	return;
