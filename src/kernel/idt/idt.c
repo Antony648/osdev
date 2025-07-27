@@ -4,12 +4,11 @@
 #include "../kernel.h"
 extern void load_idtr(void* ldtr_addr);
 extern void sr0();
+extern void sr21();
+extern void isr_x();
 struct idt_desc idt_table[TOTAL_INTERRUPTS];
 struct idtr idtr_descriptor;
-void divide_zero()
-{
-	print("divide by zero error\n");
-}
+
 //function to setup a standard idt entry of type 32IKC31
 void setup_idt32IKC31(uint32_t interrupt_no, void* address)
 {
@@ -22,16 +21,22 @@ void setup_idt32IKC31(uint32_t interrupt_no, void* address)
 }
 void idt_init()
 {
-	
+	print("starting idt load....\n");
     memset(idt_table,0,sizeof(idt_table));	//clear descriptor table
     
     idtr_descriptor.len=sizeof(idt_table)-1; 
     idtr_descriptor.addr=(uint32_t)idt_table;
-		//set values for  idtr_descriptor
-	setup_idt32IKC31(0x20,sr0);
-		//load address for ISR 0x00
-    load_idtr(&idtr_descriptor);
-		//load value of idt table
-	print("interrupt descriptor table loaded\n");
+    //set values for  idtr_descriptor
+    
+    for(int i=0;i<TOTAL_INTERRUPTS;i++)
+		setup_idt32IKC31(i,isr_x);
+    
+	setup_idt32IKC31(0x00,sr0);  	//load address for ISR 0x00
+	setup_idt32IKC31(0x21,sr21);
+    load_idtr(&idtr_descriptor);	//load value of idt table
+    
+
+    
+	print("idt loading successfull\n");
 }
 

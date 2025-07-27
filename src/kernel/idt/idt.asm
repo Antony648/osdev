@@ -1,6 +1,6 @@
 section .asm
 global load_idtr
-
+global problem21
 load_idtr:
 	push	ebp		
 	mov 	ebp,esp
@@ -9,4 +9,11 @@ load_idtr:
 	lidt	[ebx]
 				;standard function epilogue
 	pop	ebp
+	ret
+
+problem21:
+	push	ebp
+	mov		ebp,esp
+	int 	0x21
+	pop		ebp
 	ret

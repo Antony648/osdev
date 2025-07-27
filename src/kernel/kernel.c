@@ -2,6 +2,9 @@
 #include "./idt/idt.h"
 #include <stdbool.h>
 #include "./io/io.h"
+
+extern void problem21();
+extern void enable_interrupts();
 uint16_t* vedio=(uint16_t*)0x000b8000;
 uint16_t cursor_x=0;
 uint16_t cursor_y=0;
@@ -30,6 +33,7 @@ void clear_screen()
 {	int limit=VGA_HEIGHT*VGA_WIDTH;	
 	for(int i=0;i<limit;i++)
 		vedio[i]=0x0020;
+	cursor_x=0;cursor_y=0;
 }
 void print_string(char* str)
 {
@@ -79,8 +83,10 @@ void print(char * str)
 void kernel_main()
 {
 	clear_screen();
+	print("\t\tGENESIS-32 \nkernel loaded successfully.\n");
 	idt_init();
-	print("hello world\n");
-	outb(0x60,0xff);
+	
+	enable_interrupts();
+	//problem21();
 	return;
 }
