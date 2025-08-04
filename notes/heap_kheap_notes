@@ -12,3 +12,245 @@ KERNEL HEAP
 	each block is of size 4096 bytes or 4kb
 	100mb is 1024*1024*100 bytes 
 	so total number of blocks are 25600 (1024*25)
+
+this is the header file heap.h
+
+#ifndef HEAP_H
+#define HEAP_H
+#include "../osconfig.h"
+#include <stdint.h>
+#include <stddef.h>
+
+typedef unsigned char heap_block_entry;
+
+#define HEAP_BLOCK_TABLE_ENTRY_TAKEN	0x01
+#define HEAP_BLOCK_TABLE_ENTRY_FREE		0x00
+#define HEAP_BLOCK_HAS_NEXT				0x80
+#define HEAP_BLOCK_IS_FREE				0x40
+
+#define HEAP_TABLE_BLOCK_START			0xc1
+#define HEAP_TABLE_BLOCK_END			0x01
+#define HEAP_TABLE_BLOCK_MID			0x81
+#define HEAP_TABLE_BLOCK_SINGLE			0x41
+#define HEAP_TABLE_BLOCK_NULL			0x00
+struct heap_table	//insted of an array ,a struct containing start address 
+					// and number of elements, we can implement this by creating a pointer and 
+					// and assigning it to a physical location in ram and then access as offset from there
+{
+	heap_block_entry* entries;
+	size_t total;
+	};
+	
+struct heap
+					//this is a struct that actually refers to a heap, 
+					//it contains a heap table and start and end addresses
+{
+	struct heap_table* table;
+	void* start_addr;
+	void* end_addr;
+	
+	};
+int heap_create(struct heap* heap_val,void* ptr,void* end,struct heap_table* heap_t);
+void* heap_malloc(struct heap* heap_val,size_t size);
+void heap_free(struct heap* heap_val, void* ptr);
+#endif
+
+we use the macro codes for representing blocks in the heap table, we have
+#define HEAP_TABLE_BLOCK_START			0xc1
+#define HEAP_TABLE_BLOCK_END			0x01
+#define HEAP_TABLE_BLOCK_MID			0x81
+#define HEAP_TABLE_BLOCK_SINGLE			0x41
+#define HEAP_TABLE_BLOCK_NULL			0x00
+
+every non single block  begins with 0xc1, it means block of that entry is start point
+all blocks that are intermidiate to beginning and end are marked by 0x81,
+every non single block  ends with 0x01, it means end of multiblock allocation
+
+every single block allocation has only 0x41 in a single entry
+all null blocks are represented as 0x00
+
+struct heap_table	//insted of an array ,a struct containing start address 
+					// and number of elements, we can implement this by creating a pointer and 
+					// and assigning it to a physical location in ram and then access as offset from there
+{
+	heap_block_entry* entries;
+	size_t total;
+	};
+
+
+this is a structure for a heap table , it is basically an array of unsigned chars with also the count of elements or its functionality 
+comes close to that
+
+
+struct heap
+					//this is a struct that actually refers to a heap, 
+					//it contains a heap table and start and end addresses
+{
+	struct heap_table* table;
+	void* start_addr;
+	void* end_addr;
+	
+	};
+it is a structure that completely defines a heap, it contains start address of heap, end address to heap, and a pointer to a heap table, that keeps the book keeping and also the count,which should evaluate to (start address-end address)/block size , 
+
+
+int heap_create(struct heap* heap_val,void* ptr,void* end,struct heap_table* heap_t);
+void* heap_malloc(struct heap* heap_val,size_t size);
+void heap_free(struct heap* heap_val, void* ptr);
+#endif
+
+these are prototypes for functions implemented in heap.c
+we have a fucntion for creating a heap at a given location , with a given heap table,a start and end address for heap along with a heap struct for storing all data, into a single struct, the function basically does all the checking and assigns values for us in final heap struct
+
+heap_malloc() helps us to allocate a given number of contegeous blocks in the heap,and returns the pointer to allocated memory, and makes modification in heap table associated with the heap
+
+
+ #include "heap.h"
+#include "../kernel.h"
+#include "../error.h"
+#include "../essentials/essentials.h"
+#include <stdbool.h>
+#include <stddef.h>
+static bool heap_validate_alignment(void *end)	//checks if the heap is aligned to 4096
+{
+	return (((int)end % KHEAP_BLOCK_SIZE)==0);
+}
+static bool heap_entry_count(struct heap* heap_val,struct heap_table* heap_t)
+{
+	size_t cal_val=(size_t)((heap_val->end_addr-heap_val->start_addr)/KHEAP_BLOCK_SIZE);
+	if (cal_val==heap_t->total)
+		return true;
+	return false;
+}
+int heap_create(struct heap* heap_val,void* ptr,void* end,struct heap_table* heap_t)
+{
+	
+	if(!heap_validate_alignment(end)|| !heap_validate_alignment(ptr))
+		return -GEN32_INVARG;
+		
+	heap_val->table=0x00;	
+	heap_val->start_addr=ptr;
+	heap_val->end_addr=end;
+	
+	if(!heap_entry_count(heap_val,heap_t))
+		return -GEN32_INVARG;
+	heap_val->table=heap_t;
+	//set all table entries to 0x00 each table entry is a byte
+	memset((void*)heap_t->entries,(int)0x00,(size_t)(heap_t->total*sizeof(heap_block_entry)));
+	
+	print("heap create successfull.");
+	return 0;
+}
+heap_block_entry* heap_get_start_block(struct heap* heap_val, uint32_t block_count)
+{
+	heap_block_entry* i;
+	heap_block_entry* max=heap_val->table->entries+heap_val->table->total;
+	heap_block_entry* rtn_val=NULL;
+	int count=0;
+	for(i=heap_val->table->entries;i<max;i++)
+	{
+		if(*i ==0x00)
+		{
+			rtn_val=i;
+			count++;
+			i++;
+			while( count<block_count && i<max && *i ==0x00 )
+			{
+				count++;i++;
+			}
+			if(count==block_count)
+				return rtn_val;
+			rtn_val=NULL;
+			count=0;
+		}
+			
+	}
+	if(rtn_val==NULL)
+		print("heap_get_start_block null");
+	return rtn_val;
+}
+void* heap_malloc(struct heap* heap_val,size_t size)
+{
+	//size=(size+0xfff)>>12;	used to obtain number of pages requried 
+	//this will give the exact answer for 4096 but for flexibility we should use macros
+	uint32_t block_count=(size+KHEAP_BLOCK_SIZE-1)>>KHEAP_BLOCK_SHIFT;
+	//iterate through table till we find neccessary amount of blocks in series
+	heap_block_entry* address=heap_get_start_block( heap_val,  block_count);
+	if(address==NULL)
+		return NULL;
+	//mark taken blocks as taken
+	if(block_count==1)
+		*address=HEAP_TABLE_BLOCK_SINGLE;
+	else
+	{
+		*address=HEAP_TABLE_BLOCK_START;
+		heap_block_entry* temp;
+		for(temp=address+1;temp<=address+block_count-2;temp++)
+			*temp=HEAP_TABLE_BLOCK_MID;
+		*(address+block_count-1)=HEAP_TABLE_BLOCK_END;
+		
+		}
+	//convert entry in table to absolute address
+	uintptr_t base=(uintptr_t)(address - heap_val->table->entries);
+	void* abs_addr=(void*)((uintptr_t)heap_val->start_addr+(base*KHEAP_BLOCK_SIZE));
+	return  abs_addr;
+	}
+
+void heap_free(struct heap* heap_val, void* abs_addr)
+{
+	uint32_t i=(uint32_t)(abs_addr-heap_val->start_addr)/KHEAP_BLOCK_SIZE;
+	heap_block_entry*ptr= (heap_block_entry*)((uintptr_t)heap_val->table->entries+i);
+	if(*ptr ==HEAP_TABLE_BLOCK_SINGLE)	//only a single block
+	{
+		*ptr=0x00;
+		return;
+	}
+	//it is a multiblock , that starts with 0xc1 and ends with 0x01 may/may not have 0x81 in between
+	
+	else if(*ptr ==HEAP_TABLE_BLOCK_START)
+	{
+		heap_block_entry* max=heap_val->table->entries+heap_val->table->total;
+		while(*ptr  != HEAP_TABLE_BLOCK_END && ptr< max)
+		{
+			*ptr=0x00;
+			ptr++;
+		}
+		if (ptr < max)
+		*ptr=0x00;
+	}
+}
+	
+#ifndef KHEAP_H
+#define KHEAP_H
+
+#include <stddef.h>
+
+void kheap_init();
+void* kmalloc(size_t size);
+void kfree(void* ptr);
+
+#endif
+#include "kheap.h"
+#include "heap.h"
+#include "../kernel.h"
+#include "../osconfig.h"
+struct heap kernel_heap;
+struct heap_table kernel_heap_table;
+void kheap_init()
+{
+	kernel_heap_table.total=KHEAP_SIZE_BYTES/KHEAP_BLOCK_SIZE;
+	kernel_heap_table.entries=(heap_block_entry*)KHEAP_TABLE;
+	void* end=(void*)(KHEAP_START+KHEAP_SIZE_BYTES);
+	if(heap_create(&kernel_heap,(void*)KHEAP_START,end,&kernel_heap_table)<0)
+		print("failed to create heap.\n");
+}
+
+void* kmalloc(size_t size)
+{
+		return heap_malloc(&kernel_heap,size);
+}
+
+void kfree(void* ptr)
+{
+	return heap_free(&kernel_heap,ptr);
+}
