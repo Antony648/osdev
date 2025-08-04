@@ -27,11 +27,11 @@ int heap_create(struct heap* heap_val,void* ptr,void* end,struct heap_table* hea
 	
 	if(!heap_entry_count(heap_val,heap_t))
 		return -GEN32_INVARG;
-		
+	heap_val->table=heap_t;
 	//set all table entries to 0x00 each table entry is a byte
-	memset(heap_t->entries,(int)0x00,(size_t)(heap_t->total*sizeof(heap_block_entry)));
+	memset((void*)heap_t->entries,(int)0x00,(size_t)(heap_t->total*sizeof(heap_block_entry)));
 	
-	
+	print("heap create successfull.");
 	return 0;
 }
 heap_block_entry* heap_get_start_block(struct heap* heap_val, uint32_t block_count)
@@ -58,6 +58,8 @@ heap_block_entry* heap_get_start_block(struct heap* heap_val, uint32_t block_cou
 		}
 			
 	}
+	if(rtn_val==NULL)
+		print("heap_get_start_block null");
 	return rtn_val;
 }
 void* heap_malloc(struct heap* heap_val,size_t size)

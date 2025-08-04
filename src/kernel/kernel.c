@@ -92,7 +92,11 @@ void kernel_main()
 	//problem21();
 	void * ptr=kmalloc(50);
 	void * ptr2=kmalloc(5000);
-	if(ptr || ptr2)
-	{}
+	void * ptr3=kmalloc(50);
+	kfree(ptr3);
+	kfree(ptr);
+	kfree(ptr2);
+	//if(ptr || ptr2)
+	//{}
 	return;
 }

@@ -9,7 +9,7 @@ void kheap_init()
 	kernel_heap_table.total=KHEAP_SIZE_BYTES/KHEAP_BLOCK_SIZE;
 	kernel_heap_table.entries=(heap_block_entry*)KHEAP_TABLE;
 	void* end=(void*)(KHEAP_START+KHEAP_SIZE_BYTES);
-	if(heap_create(&kernel_heap,(void*)KHEAP_START,end,&kernel_heap_table))
+	if(heap_create(&kernel_heap,(void*)KHEAP_START,end,&kernel_heap_table)<0)
 		print("failed to create heap.\n");
 }
 
