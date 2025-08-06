@@ -1,4 +1,5 @@
 #include "paging.h"
+#include "../kernel.h"
 #include "../heap/heap.h"
 dir_table_address create_32_dir_table(uint32_t flags)
 {
@@ -7,20 +8,41 @@ dir_table_address create_32_dir_table(uint32_t flags)
 	//to the corresponding entries to page directory table,
 	dir_table_address rtn_val= (dir_table_address)kzalloc(NO_DIR_ENTRIES*sizeof(dir_table_entries));
 	dir_table_entries index_val=0x00;
-	dir_table_address index=0x00;
+	if(rtn_val ==NULL)
+	{
+		print("create_32_dir_table,paging.c:page dir table was itself given NULL");
+		return NULL;
+	}
+	else if((((uintptr_t)rtn_val)& 0xfff)!=0)
+	{
+		 print("create_32_dir_table,paging.c:page dir table was itself given unaligned addr");
+		 return NULL;
+	}
+	dir_table_address index=rtn_val;
 	for(int i=0;i<NO_DIR_ENTRIES;i++)
-	{//should perform pointer arithemetic, so add 4 instead of 1 every single time ot rtn_val
-		index=rtn_val+i;
+	{
 		index_val=(dir_table_entries)kzalloc(NO_PAGE_ENTRIES*sizeof(page_table_entries)); 
+		//dir_table_entries is a type def to uint32_t
 		//kzalloc desingned to return 4kb aligned addresses
 		//as address returned is a mulitple of 4096
 		//last 12 bits are aldready zero but quick asserting is cheap and helps in later debugging
-		
-		*index=((uint32_t)index_val & 0xfffff000)| (flags& 0xfff);;
+		//index[i] will increment  (4*i)bytes to index
+		if (index_val==NULL)
+		{
+			print("create32_dir_table,paging.c:kzalloc in dir table gave NULL\n");
+			index[i]=0;
+		}
+		else if((index_val & 0xfff)!=0x00)
+		{
+			print("create32_dir_table,paging.c:kzalloc in dir table gave non aligned address\n");
+			index[i]=0;
+		}
+		else
+		index[i]=(index_val & 0xfffff000)| (flags& 0xfff);
 		
 		//code for setting flags
 		
-		}
+	}
 	return rtn_val;
 	
 	}
