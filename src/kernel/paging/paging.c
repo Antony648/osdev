@@ -9,7 +9,8 @@ dir_table_address create_32_dir_table(uint32_t flags)
 {
 	//this function creates a directory table by allocating space(4kb) for itself
 	//then allocate 4kb upto 1024 times , so 4mb addtionally, and move the returned addresses
-	//to the corresponding entries to page directory table,
+	//to the corresponding entries to page directory table, it also performs mapping of these addresses 
+	//such that physical addr= virtual addr
 	dir_table_address rtn_val= (dir_table_address)kzalloc(NO_DIR_ENTRIES*sizeof(dir_table_entries));
 	dir_table_entries index_val=0x00;
 	uint32_t* page_index=NULL;
