@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include "./io/io.h"
 #include "./heap/kheap.h"
+#include "./paging/paging.h"
 
 extern void problem21();
 extern void enable_interrupts();
@@ -86,17 +87,18 @@ void kernel_main()
 	clear_screen();
 	print("\t\tGENESIS-32 \nkernel loaded successfully.\n");
 	kheap_init();
+	print("kernel heap setup initalized....\n");
 	idt_init();
+	print("interrupt table loaded .....\n");
 	
 	enable_interrupts();
-	//problem21();
-	void * ptr=kmalloc(50);
-	void * ptr2=kmalloc(5000);
-	void * ptr3=kmalloc(50);
-	kfree(ptr3);
-	kfree(ptr);
-	kfree(ptr2);
-	//if(ptr || ptr2)
-	//{}
+	print("interrupts enabled....\n");
+	dir_table_address directory_table=create_32_dir_table(PAGING_PRESENT|READ_AND_WRITE);
+	print("directory table for 4gb set....\n");
+	set_dir_table(directory_table);
+	print("directory table loaded......\n");
+	enable_paging();
+	print("paging enabled...\n");
+	
 	return;
 }

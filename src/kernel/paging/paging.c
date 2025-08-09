@@ -1,9 +1,9 @@
 #include "paging.h"
 #include "../kernel.h"
-#include "../heap/heap.h"
+#include "../heap/kheap.h"
 
-extern load_dir_table(dir_table_address);
-extern enable_paging_asm();
+extern void load_dir_table(dir_table_address);
+extern void enable_paging_asm();
 static dir_table_address  cur_dir_table=NULL;
 dir_table_address create_32_dir_table(uint32_t flags)
 {
