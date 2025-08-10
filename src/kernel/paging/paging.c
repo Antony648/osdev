@@ -1,6 +1,7 @@
 #include "paging.h"
 #include "../kernel.h"
 #include "../heap/kheap.h"
+#include "../error.h"
 
 extern void load_dir_table(dir_table_address);
 extern void enable_paging_asm();
@@ -74,4 +75,25 @@ void enable_paging()
 {
 	//checks if any
 	enable_paging_asm();
+}
+
+int get_index_from_virt(uint32_t* virtual_address, uint32_t* dir_index, uint32_t* page_index)
+{
+	if (((uintptr_t)virtual_address & 0xfff )!=0)
+		return -GEN32_INVARG;
+
+	*dir_index=(uintptr_t)virtual_address/(NO_PAGE_ENTRIES* PAGE_BLOCK_SIZE);
+	*page_index=((uintptr_t)virtual_address%(NO_PAGE_ENTRIES*PAGE_BLOCK_SIZE))/PAGE_BLOCK_SIZE;
+	
+	return 0;
+	
+}
+int set_page_table_enrty(dir_table_address dir_table,uint32_t* virt_addr,page_table_entries set_val,uint32_t flags)
+{
+		uint32_t dir_index,page_index;
+		if(get_index_from_virt(virt_addr,&dir_index,&page_index)!=0)
+			return -GEN32_INVARG;
+		page_table_address pg_t=(page_table_address)(dir_table[dir_index]& 0xfffff000);
+		pg_t[page_index]=set_val|flags;
+		return 0;
 }

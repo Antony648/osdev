@@ -41,6 +41,9 @@ dir_table_address create_32_dir_table(uint32_t flags);
 void set_dir_table(dir_table_address addr);
 void enable_paging();
 
+int get_index_from_virt(uint32_t* virtual_address, uint32_t* dir_index, uint32_t* page_index);
+int set_page_table_enrty(dir_table_address dir_table,uint32_t* virt_addr,page_table_entries set_val,uint32_t flags);
+
 #define PAGING_PRESENT		0b00000001
 #define READ_AND_WRITE		0b00000010
 #define ACCESS_ALL 			0b00000100
@@ -49,4 +52,5 @@ void enable_paging();
 
 #define NO_DIR_ENTRIES		1024
 #define NO_PAGE_ENTRIES		1024
+#define PAGE_BLOCK_SIZE		4096
 #endif
