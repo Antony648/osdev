@@ -91,6 +91,9 @@ void kernel_main()
 	
 	print("kernel heap setup initalized....\n");
 	
+	disk_search_and_init();
+	print("searching for disks....");
+	
 	idt_init();
 	print("interrupt table loaded .....\n");
 	
@@ -105,8 +108,7 @@ void kernel_main()
 	enable_paging();
 	print("paging enabled...\n");
 	
-	char buf[512];
-	read_sect_disk(0,1,buf);
+	
 	
 	enable_interrupts();
 	print("interrupts enabled....\n");
