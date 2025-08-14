@@ -1,9 +1,18 @@
 # include "../io/io.h"
+we need this becuase all disks are seen as block devies and we need to use io for sending and recieving data,so we neeed to write it conveiniently in bytes , words and dwords
 # include "disk.h"
+this file basically contains the implementation of our prototypes
 # include "../essentials/essentials.h"
+for memeset
 # include "../osconfig.h"
+for all neccessary CONSTANTS
 # include "../error.h"
-struct disk disk1;
+for all error codes
+
+
+struct disk disk1;	
+	we only have a single file disk for this stage.
+
 int read_sect_disk(uint32_t lba, uint32_t total, void* buf)
 {
 		//lba contains starting lba number to read form
@@ -29,6 +38,7 @@ int read_sect_disk(uint32_t lba, uint32_t total, void* buf)
 }
 void disk_search_and_init()
 {
+ here it is just a dummy function, just for searching and init, at this satge it does not do what it claims,it just initializes all bytes to 0 to the only disk it knows,and sets the type and size, type to say its a real device of size one sector
 	memset(&disk1,0,sizeof(disk1));
 	disk1.type=DISK_TYPE_REAL;	
 	disk1.size=SECTOR_SIZE;
@@ -36,6 +46,7 @@ void disk_search_and_init()
 
 struct disk* disk_get(uint32_t index)
 {
+this is to obtain the address of a struct in a array of struct where we have a number of disk structs one after the other, at this stage we only have one entry, so any entry except zero returns NULL, if 0 we return address of disk1
 	if(index!=0)
 		return NULL;
 	return &disk1;
@@ -43,6 +54,7 @@ struct disk* disk_get(uint32_t index)
 
 int read_disk_block(struct disk* disk_p,uint32_t lba, uint32_t total, void* buf)
 {
+it reads a number of blocks from a starting lba, into a buffer, for a given disk, it is just read_sect_disk()byt we can choose a disk, it just spports disks 
 	if(disk_p != &disk1)
 		return -GEN32_EIO;
 	return read_sect_disk(lba,total,buf);

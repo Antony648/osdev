@@ -1,18 +1,30 @@
 #ifndef DISK_H 
+		
 #define DISK_H
+	prologue of header file
 
 #include <stdint.h>
+for all the data types
 
 
 typedef uint32_t DISK_TYPE;
+uses a 32bit unsigned integer for DISK_TYPE
 
 #define DISK_TYPE_REAL 0
+	
 struct disk
 {
 	DISK_TYPE type;
 	uint32_t size;
 };
+
+all disks are assumed to have a disk type (virutal,real)
+and a size that tells how large it is
+
 void disk_search_and_init();
+
+
 struct disk* disk_get(uint32_t index);
 int read_disk_block(struct disk* disk_p,uint32_t lba, uint32_t total, void* buf);
+epilogue of  header file
 #endif

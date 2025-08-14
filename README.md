@@ -6,3 +6,4 @@ it is inspired on Daniel Mcarthys course on osdev
     bootloader
     custom GDT and IDT setup
     protected mode kernel
+    two level paging
