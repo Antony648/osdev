@@ -1,6 +1,9 @@
 #include "disk_stream.h"
 #include "../heap/kheap.h"
 #include "../osconfig.h"
+#include "../kernel.h"
+
+/*
 int read_single_sect_disk(uint32_t lba, void* buf)
 {
 	//this function reads a single sector for to the sector number passed in
@@ -24,22 +27,36 @@ int read_single_sect_disk(uint32_t lba, void* buf)
 	
 		return 0;
 }
-
-void get_bytes_from_disk( uint32_t byte_address, uint32_t no_bytes, uint8_t* ram_location)
+*/
+struct disk_stream* init_disk_stream(uint32_t disk_id)
+{
+	struct disk_stream *ds=kzalloc(sizeof(struct disk_stream));
+	struct disk* disk1=get_disk(disk_id);
+	if (!disk1 )
+		return NULL;
+	ds->disk_struct=disk1;
+	ds->pos=0;
+	return ds;
+}
+void disk_stream_seek(struct disk_stream* ds, uint32_t position)
+{
+		ds->pos=position;
+}
+void get_bytes_from_disk( struct disk_stream *ds, uint32_t no_bytes, uint8_t* ram_location)
 {
 	if(no_bytes ==0)
 		return;
 	
 	uint8_t* buf=kzalloc(SECTOR_SIZE);
-	uint32_t lba=byte_address/SECTOR_SIZE;
-	uint32_t index=byte_address%SECTOR_SIZE;
+	uint32_t lba=ds->pos/SECTOR_SIZE;
+	uint32_t index=ds->pos%SECTOR_SIZE;
 	uint32_t i=0;
 	uint32_t count = (no_bytes + index)/SECTOR_SIZE;
 	if((no_bytes +index)% SECTOR_SIZE)
 		count++;
 	for(;count>0;count--,lba++)
 	{
-		if(read_single_sect_disk(lba,buf))
+		if(read_disk_block(ds->disk_struct,lba,1,buf))
 		{
 			print("disk_stream.c:get_bytes_from_disk,failed to read the block");
 			kfree(buf);
@@ -55,5 +72,8 @@ void get_bytes_from_disk( uint32_t byte_address, uint32_t no_bytes, uint8_t* ram
 	kfree(buf);
 	return;
 }
-
+void free_disk_stream(struct disk_stream* ds)
+{
+	kfree(ds);
+}
 

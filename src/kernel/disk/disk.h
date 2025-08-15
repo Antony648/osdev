@@ -13,6 +13,6 @@ struct disk
 	uint32_t size;
 };
 void disk_search_and_init();
-struct disk* disk_get(uint32_t index);
+struct disk* get_disk(uint32_t index);
 int read_disk_block(struct disk* disk_p,uint32_t lba, uint32_t total, void* buf);
 #endif

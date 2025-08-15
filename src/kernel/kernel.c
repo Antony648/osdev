@@ -5,6 +5,7 @@
 #include "./heap/kheap.h"
 #include "./paging/paging.h"
 #include "./disk/disk.h"
+#include "./disk/disk_stream.h"
 
 extern void problem21();
 extern void enable_interrupts();
@@ -112,6 +113,13 @@ void kernel_main()
 	
 	enable_interrupts();
 	print("interrupts enabled....\n");
+	
+	struct disk_stream *ds=(struct disk_stream*)init_disk_stream(0);
+	 disk_stream_seek(ds, 0x201);
+	unsigned char c= 0;
+	get_bytes_from_disk(ds,1, &c);
+	while(1){}
+	free_disk_stream(ds);
 	
 	
 	return;

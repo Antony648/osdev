@@ -34,7 +34,7 @@ void disk_search_and_init()
 	disk1.size=SECTOR_SIZE;
 }
 
-struct disk* disk_get(uint32_t index)
+struct disk* get_disk(uint32_t index)
 {
 	if(index!=0)
 		return NULL;
