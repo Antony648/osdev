@@ -1,0 +1,72 @@
+ORG	0X7c00
+[bits	16]
+
+jmp	short start
+nop
+
+OEMIdentifier 			db 'GEN32 OS' 
+	this is the a string that just shows the start, not so imprortant for functionality
+bytespersect			dw	0x200	
+	it says the size of a sector is 512 bytes(0x200)
+sectperclust			db	0x80
+	this gives 128 sectors per cluster this is huge, usually we stick with 1-8
+reservedsect			dw	0xc8
+	this means 200 reserved sectors between fat table and boot sector, this where our os code sits as per makefile
+fatcopies			db	0x02
+	this means we have like 2 fat tables one is the one used for reference other is a backup,
+rootdirents			dw 	0x40
+	this means we have 64 directory entries,
+sectnum				dw	0x00
+	sector count, 0x00 means use "sectbig"
+mediatype			db	0xf8
+	0xf8 implies it is a fixed disk
+sectperfat			dw	0x100
+	this means that we have 256 sectors per FAT
+sectpertrack			dw	0x20
+	32 sectors per track, we consider it like a cd track
+numheads			dw	0x40
+	number of heads is 64
+hiddensect			dd	0x00
+	hidden sectors before partition is set to 0
+sectbig				dd  0x773594
+	total number of sectors, as we gave it as 0x00, we use sectbig, so we have 7865492 sectors around 3.7
+
+;extended BPB
+drivenum			db	0x80
+	it shows it  is the first hard drive
+WinNTbit			db	0x00
+	it means reserved
+sign				db  	0x29
+	indicates that next feilds are valid
+volID				dd	0xd105
+	serial number of 
+volIDString			db	'GEN32  BOOT'
+	it says the volume label is GEN32 BOOT, it should be exactly 11 characters and if smaller pad it with extra 0
+sysIDString			db  	'FAT16   '
+	it mentions the file system type
+
+the uppper 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
