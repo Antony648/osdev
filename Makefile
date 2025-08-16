@@ -8,7 +8,10 @@ all:	kernel bootloader
 	rm  $(BUILD_DIR)/final/os.bin
 	dd if=$(BUILD_DIR)/bootloader/boot.bin >> $(BUILD_DIR)/final/os.bin 
 	dd if=$(BUILD_DIR)/kernel/kernel.bin>> $(BUILD_DIR)/final/os.bin
-	dd if=/dev/zero bs=512 count=100 >> $(BUILD_DIR)/final/os.bin
+	dd if=/dev/zero bs=1048576 count=16 >> $(BUILD_DIR)/final/os.bin
+	sudo mount -t vfat $(BUILD_DIR)/final/os.bin ./mount/disk
+	sudo cp	./test.txt ./mount/disk
+	sudo umount ./mount/disk
 
 kernel:	kernel_asm_o	kernel_o 	idt_asm_o 	idt_o  essentials_o  isr_asm_o  io_asm_o   isr_o     heap_o  kheap_o  paging_asm_o paging_o  disk_o disk_stream_o
 	i686-elf-ld  -g -relocatable $(KERNEL_FILES)  -o  $(BUILD_DIR)/kernel/kernelreloc.o

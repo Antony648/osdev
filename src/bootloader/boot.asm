@@ -1,7 +1,32 @@
 ORG	0X7c00
 [bits	16]
 
-jmp	start
+jmp	short start
+nop
+
+OEMIdentifier 		db 'GEN32 OS'
+bytespersect		dw	0x200
+sectperclust		db	0x80
+reservedsect		dw	0xc8
+fatcopies			db	0x02
+rootdirents			dw 	0x40
+sectnum				dw	0x00
+mediatype			db	0xf8
+sectperfat			dw	0x100
+sectpertrack		dw	0x20
+numheads			dw	0x40
+hiddensect			dd	0x00
+sectbig				dd  0x773594
+
+;extended BPB
+drivenum			db	0x80
+WinNTbit			db	0x00
+sign				db  0x29
+volID				dd	0xd105
+volIDString			db	'GEN32  BOOT'
+sysIDString			db  'FAT16   '
+
+
 start:
 	cli
 	mov	ax,0x00

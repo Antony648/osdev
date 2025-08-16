@@ -1,8 +1,11 @@
 #include "disk_stream.h"
+the function definitions are for the prototypes in disk_stream.h
 #include "../heap/kheap.h"
+we need kzalloc for creating disk_stream
 #include "../osconfig.h"
-#include "../kernel.h"
 
+#include "../kernel.h"
+for print
 /*
 int read_single_sect_disk(uint32_t lba, void* buf)
 {
@@ -28,22 +31,31 @@ int read_single_sect_disk(uint32_t lba, void* buf)
 		return 0;
 }
 */
+
 struct disk_stream* init_disk_stream(uint32_t disk_id)
 {
+THIS FUNCTION EXPECTS A DISK ID AND RETURNS A DISK STREAM POINTER THAT POINTS TO A VALID DISK STREAM STRUCT WITH THE ADDRESS OF DISK PASSED AS INDEX AND POS=0	
 	struct disk_stream *ds=kzalloc(sizeof(struct disk_stream));
+ALLOCATES SPACE FOR DISKSTREAM DS
 	struct disk* disk1=get_disk(disk_id);
+TRIES TO GET DISK STRUCT ADDR
 	if (!disk1 )
 		return NULL;
+IF FAILS RETURN NULL
 	ds->disk_struct=disk1;
+ELSE SET IT 
 	ds->pos=0;
+SET POS TO 0
 	return ds;
 }
 void disk_stream_seek(struct disk_stream* ds, uint32_t position)
 {
+NOTHING MUCH JUST HELPS US TO SET STARTING POINT TO READ FROM THE DISK
 		ds->pos=position;
 }
 void get_bytes_from_disk( struct disk_stream *ds, uint32_t no_bytes, uint8_t* ram_location)
 {
+THIS FUNCTION DOES THE HEAVY LIFTING OF 
 	if(no_bytes ==0)
 		return;
 	
