@@ -12,6 +12,7 @@ void* malloc_32(void* page_addr,size_t size);
 #define DATA_OFFSET_BYTES  128
 #define DATA_OFFSET_BLOCK  4
 #define SIZE_OF_BLOCK_BYTE	32
+#define TOTAL_BYTES_AVAIL	3968
 #define BLOCK_START	0xc1
 #define BLOCK_END	0x01
 #define BLOCK_SINGLE 0x41

@@ -85,18 +85,49 @@ void heap32_free(void* page_addr, void* block_addr)
 {
 	//uint32_t* addr=(uint32_t*)block_addr;
 	//check
-	if((uint8_t*)block_addr-(uint8_t*)page_addr<128)
-		print("heap32.c:heap32_free:invalid arg");
+	if((uint8_t*)block_addr-(uint8_t*)page_addr<DATA_OFFSET_BYTES)
+	{	print("heap32.c:heap32_free:invalid arg");
+		return ;
+	}
+	
 	int index= (uint8_t*)block_addr-(uint8_t*)page_addr-DATA_OFFSET_BYTES;
-	uint8_t* index_addr=(uint8_t*)page_addr+index;
+	uint8_t* index_addr=(uint8_t*)page_addr+(index/32);
+	
+	if(*index_addr ==0x00)
+	{
+		print("double free\n");
+		return;
+	}
+	if(*index_addr ==0x01 || *index_addr ==0x81)
+	{
+		print("incorrect\n");
+		return;
+	}
 	if(*index_addr ==0x41)
 	{
 		*index_addr=0x00; return;
 	}
 	else
 	{
-		for(;*index_addr!=0x01;index_addr++)
+		if(*index_addr!=0xc1)
+		{
+			print("corrupted\n");
+			return;
+		}
+		*index_addr =0x00;
+		index_addr++;
+		//destroyed dragon's head
+		for(;*index_addr!=0x01 && (index_addr-(uint8_t*)page_addr)<DATA_OFFSET_BYTES;index_addr++)
+		{
+			//loop for destroying dragon's body full of 0x81
+			if(*index_addr!=0x81)
+			{
+				print("corrupted\n"); return;
+			}
 			*index_addr=0x00;
+			
+		}
+		//for destroying dragon's tail 0x01
 		*index_addr=0x00;
 	}
 }
