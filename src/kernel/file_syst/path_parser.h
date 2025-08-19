@@ -2,7 +2,7 @@
 #define PATH_PARSER_H
 #include "../disk/disk.h"
 struct path_head
-{sth
+{
 	int disk_id;
 	struct path_body* first;
 	

@@ -100,6 +100,11 @@ bool heap32_free(void* page_addr, void* block_addr)
 	}
 	
 	int index= (uint8_t*)block_addr-(uint8_t*)page_addr-DATA_OFFSET_BYTES;
+	if(index%32 !=0)
+	{
+		print("not byte aligned , appears to have sent a random address\n");
+		return false;
+	}
 	uint8_t* index_addr=(uint8_t*)page_addr+(index/32);
 	//for abnormal cases
 	if(*index_addr == 0xab)
