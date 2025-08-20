@@ -103,4 +103,11 @@ void path_llist_free(struct path_head* head)
 		heap_cream_free(head);	
 		return;
 }
-
+struct path_body* path_get_first(struct path_head* head)
+{
+	return head->first;
+}
+struct path_body* path_get_next(struct path_body* body)
+{
+	return body->next;
+}
