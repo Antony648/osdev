@@ -32,7 +32,17 @@ uint16_t simp_text_hex_gen(char letter,char color)
 	return (color<<8 | letter);
 }
 
-
+static void scroll1()
+{
+	for(int i=0;i<24;i++)
+	{
+		for(int j=0;j<79;j++)
+			vedio[(i*80)+j]=vedio[((i+1)*80) +j];
+	}
+	for(int i=0;i<79;i++)
+		vedio[(24*79)+i]=0;
+	
+}
 
 void clear_screen()
 {	int limit=VGA_HEIGHT*VGA_WIDTH;	
@@ -66,7 +76,14 @@ void print(char * str)
 		switch(str[i])
 		{
 			case '\n':
-				cursor_y++;cursor_x=0;
+				if(cursor_y<24)
+						cursor_y++;
+					else
+					{
+						scroll1();
+						//cursor_y
+					}
+				cursor_x=0;
 				break;
 			case '\t':
 				cursor_x+=5;
@@ -79,7 +96,14 @@ void print(char * str)
 				cursor_x++;
 				if(cursor_x>79)
 				{
-					cursor_y++;cursor_x=0;
+					if(cursor_y<24)
+						cursor_y++;
+					else
+					{
+						scroll1();
+						//cursor_y
+					}
+					cursor_x=0;
 				}
 				break;
 		}
@@ -154,19 +178,26 @@ void kernel_main()
 	
 	void* p7=heap_cream_malloc(karray,4000);
 	//should give null, and message to use kzalloc
+	//attempt to fill karray
+	void* p8=heap_cream_malloc(karray,3800);
+	void* p9=heap_cream_malloc(karray,3800);
+	void* p10=heap_cream_malloc(karray,3800);
+	void* p11=heap_cream_malloc(karray,3800);
+	void* p12=heap_cream_malloc(karray,3800);
+	//should fill the karray
+	void* p13=heap_cream_malloc(karray,3800);
+	//should print error msg
+	heap_cream_free(karray,p8);
+	heap_cream_free(karray,p9);
+	heap_cream_free(karray,p10);
+	heap_cream_free(karray,p11);
+	heap_cream_free(karray,p12);
 	
-	
-	
-	heap_cream_free(karray,p7);
 	//should give false, and message that we tried to free null
-	
+	if(p7 && p13){}
 	
 	
 	heap_cream_destroy(karray);
-	void* p8=kzalloc(1);
-	void* p9=kzalloc(1);
-	//check the values of p8 and p9 and value of  karray[0] and karray[1]. to know if its freed
-	kfree(p9);
-	kfree(p8);
+	
 	return;
 }
