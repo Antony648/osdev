@@ -102,10 +102,12 @@ struct disk* check_disk(unsigned short ata_val)
 {
 	disk* rtn_val=NULL;
 	unsigned char port_no,drive;
+	
 	port_no=(ata_val & 0x02)?0x170:0x1f0;
 	drive=(ata_val & 0x01)?0xb0:0xa0;
-	outb(port_no+0x206,0x00);
-	outb(port_no+6,drive);
+	
+	outb(port_no+0x206,0x00);	//clearing control 
+	outb(port_no+6,drive);	//setting communication channel
 	
 	//delay
 	for(int i=0;i<450;i++)
@@ -147,8 +149,8 @@ void disk_search_and_init()
 	set_disk_info(&disk1);
 	get_disk_info(&disk1,0xec,buf);
 	//should contain data in buffer at this point
-	disk1.sect_count=(uint32_t)(buf[60]<<16)|buf[61];
-	disk1.sect_size=(uint32_t)(buf[117]<<16)|buf[118];
+	disk1.sect_count=(uint32_t)(buf[61]<<16)|(uint32_t)buf[60];
+	disk1.sect_size=(uint32_t)(buf[118]<<16)|(uint32_t)buf[117];
 	motherlobe[0]=&disk1;
 	//now we can set first entry of motherlobe
 	//scan of other three
@@ -180,7 +182,37 @@ struct disk* get_disk(uint32_t index)
 
 int read_disk_block(struct disk* disk_p,uint32_t lba, uint32_t total, void* buf)
 {
-	if(disk_p != &disk1)
-		return -GEN32_EIO;
-	return read_sect_disk(lba,total,buf);
+	unsigned short base=disk_p->base_data_port;
+	if(disk_p->is_master)
+		outb(base+6,0xe0|((lba>>24)&0x0f));
+	else
+		outb(base+6,0xf0|((lba>>24)&0xf));
+	while(inb(base+7) & 0x80);
+	//check 
+	outb(base+2,total&0xff);
+	
+	outb(base+3,(lba &0xff));
+	outb(base+4,((lba>>8)&0xff));
+	outb(base+5,((lba>>16)&0xff));
+	
+	outb(base+7,0x20);	//code 0x20 means to read
+	
+	
+	//here we are ready to accept data from data port
+	uint16_t *cur_start=(uint16_t*)buf;
+	for(int i=0;i<total;i++)
+	{
+		while((inb(base+7)&0x88)!=0x08){}
+	
+		//check for errros
+		if(inb(base+7)&0x01 || inb(base+7)&0x02) 
+			return DISK_READ_ERR;
+		for(int j=0;j<256;j++)
+		{
+			cur_start[j]=in16(base);
+		}
+		cur_start+=256;
+		
+	}
+	return 0;
 }

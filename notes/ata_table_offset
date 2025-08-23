@@ -1,0 +1,17 @@
++0		data port	16-bit data read/write
++1		error/features  read:error,write:features
++2		sector count	number of sectors
++3		LBA low		bits 0-7 of lba
++4		LBA mid		bits 8-15 of lba
++5		LBA high	bits 16-23 of lba
++6		drive/head	master/slave bits24-27 of lba
++7 		command/stat	write:command read:status
+
+there is a specific order or suggested order for moving values to ports
+
+first drive/head base+6
+second count to base+2
+third fill lba values to base+3,base+4,base+5
+at last set the command to base+7 
+wait for bsy and drq once they are set as appropriate values
+use a loop to read the number value from base
