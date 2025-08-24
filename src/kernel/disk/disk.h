@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define ATA_WAIT 0x1000000
+#define ATA_WAIT 100000
 typedef uint32_t DISK_TYPE;
 
 #define DISK_TYPE_REAL 0
@@ -45,4 +45,5 @@ struct disk
 void disk_search_and_init();
 struct disk* get_disk(uint32_t index);
 int read_disk_block(struct disk* disk_p,uint32_t lba, uint32_t total, void* buf);
+void disk_debug_print();
 #endif

@@ -1,0 +1,43 @@
+PIT
+the pit has 3 channels, and we usually use the channel0 
+(IRQ0- IRQ 0X20)
+to the program we talk to 
+
+port 0x43: 	command/control port
+port 0x40:	channel 0, where we send the divisor
+
+PIT clock frequency
+pit runs at a frequency of 1193182 hz
+we pick a target frequency of 100hz
+we choose 0x40  for sending the divisor
+we can choose 0x41 or 0x42 we can select which port to send data by setting it up in the 0x43
+
+so 0x43 expects the value of a byte out of that one byte
+bit(7-6):select channel
+	00:channel 0x40
+	01:channel 0x41
+	02:channel 0x42
+bit(5-4):read/write
+	00:low byte
+	01:high byte
+	11:low then high byte
+bit(3-1):mode
+	010: rate generator(recommeded for scheduling)
+	011: square generator(also used somethimes)
+bit(0):BCD
+	0:16bit binary
+	1:BCD 
+
+in our current setup we use 
+	channel 0(0x40) 00
+	read/write	11
+	mode		010
+	binary		0
+thereby getting a value of 
+0011 0100= 0x34 
+we send this to 0x43, and send the value to 0x40
+
+regarding the value we send to 0x40
+a pit counts 1193182 in a second if we want it to count only a 100times in a second ,we send 1193182/100 (how many 100hz in a second) it will only send an interrupt a 100 times in a second
+
+so wha

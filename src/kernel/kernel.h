@@ -5,6 +5,10 @@
 #define VGA_WIDTH  80
 
 void print(char * str);
+void print_hex(uint8_t b);
+void print_16(uint16_t val);
+void print_32(uint32_t val);
+void print_64(uint64_t val);
 void print_string_x_y(char*str,uint8_t x,uint8_t y,char color);
 void print_x_y(char letter,uint8_t x,uint8_t y,char color);
 void print_string(char* str);

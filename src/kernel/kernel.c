@@ -2,10 +2,12 @@
 #include "./idt/idt.h"
 #include <stdbool.h>
 #include "./io/io.h"
+#include "./pit/pit.h"
 #include "./heap/kheap.h"
 #include "./heap/heap_cream.h"
 #include "./paging/paging.h"
 #include "./disk/disk.h"
+#include "./time/time.h"
 #include "./disk/disk_stream.h"
 
 extern void problem21();
@@ -111,28 +113,51 @@ void print(char * str)
 		}
 	}
 }
+
+
+
 void print_hex(uint8_t b)
 {
 	char *hex="0123456789abcdef";
-	char str[2]={hex[(b>>4)&0xf], hex[b & 0xf]};
+	char str[3]={hex[(b>>4)&0xf], hex[b & 0xf],'\0'};
 	print(str);
+}
+
+void print_16(uint16_t val)
+{
+	print_hex((uint8_t)((val>>8)&0xff));
+	print_hex((uint8_t)(val&0xff));
+}
+
+void print_32(uint32_t val)
+{
+	print_16((uint16_t)((val>>16) &0xffff));
+	print_16((uint16_t)(val&0xffff));
+}
+
+void print_64(uint64_t val)
+{
+	print_32((uint32_t)((val>>32)&0xffffffff));
+	print_32((uint32_t)(val & 0xffffffff));
 }
 void kernel_main(uint8_t boot_drive)
 {
 	G_BOOT_DRIVE =boot_drive;
 	clear_screen();
-	print_hex(G_BOOT_DRIVE);
+	
 	print("\t\tGENESIS-32 \nkernel loaded successfully.\n");
+	
 	kheap_init();
 	
 	print("kernel heap setup initalized....\n");
 	
-	disk_search_and_init();
-	print("searching for disks....");
+	
 	
 	idt_init();
 	print("interrupt table loaded .....\n");
 	
+	pit_init((uint32_t) 100);
+	print("set pit to a safe 100hz");
 	
 	
 	dir_table_address directory_table=create_32_dir_table(PAGING_PRESENT|READ_AND_WRITE);
@@ -144,70 +169,20 @@ void kernel_main(uint8_t boot_drive)
 	enable_paging();
 	print("paging enabled...\n");
 	
+	print("searching for disks....\n");
+	disk_search_and_init();
 	
+	print("printing info obtained\n\n");
+	disk_debug_print();
 	
 	enable_interrupts();
 	print("interrupts enabled....\n");
 	
-	//heap cream tests
-	uintptr_t karray[5];
-	heap_cream_init(karray);
-	//karray is zeroed
-	void* p1=heap_cream_malloc(karray,32);
-	//should create an entry in karray pointing to first allocated pages,and p1 should be that address +0x80
-	void* p2=heap_cream_malloc(karray,32);
-	//should not create further entries in karray, should return p1+0x20 if working fine
-	void* p3=heap_cream_malloc(karray,96);
-	//shold not create further entries in karray, shoule return p1+0x40 if working fine
-	//the table inside karray should be 0x41 0x41 0xc1 0x81 0x01
-	heap_cream_free(karray,p2);
-	//should unset the second table entry of karray[0];
-	void* p5=heap_cream_malloc(karray,107);
-	//should give p5=p3+0x60 and set 
-	void* p4=heap_cream_malloc(karray,3899);
-	//should add one more entry to karray, and allocate space in that page
-	//break here to know if pages are resused and freed.
-	void* p6=heap_cream_malloc(karray,45);
-	//should allocate spece in first page array[0]
-	heap_cream_free(karray,p3);
-	//should free from first page , karray still should contains 2 values
-	heap_cream_free(karray,p4); 
-	//should remove second element from the karray
-	heap_cream_free(karray,p1);
-	//should change table in first block
-	heap_cream_free(karray,p2);
-	//should throw error as we double free it, 
+	sleep(3);
+	print("hello");
+	sleep(3);
+	print("hello");
 	
-	
-	heap_cream_free(karray,p5);
-	//should free
-	heap_cream_free(karray,p6);
-	//should completely free the karray
-	
-	
-	
-	void* p7=heap_cream_malloc(karray,4000);
-	//should give null, and message to use kzalloc
-	//attempt to fill karray
-	void* p8=heap_cream_malloc(karray,3800);
-	void* p9=heap_cream_malloc(karray,3800);
-	void* p10=heap_cream_malloc(karray,3800);
-	void* p11=heap_cream_malloc(karray,3800);
-	void* p12=heap_cream_malloc(karray,3800);
-	//should fill the karray
-	void* p13=heap_cream_malloc(karray,3800);
-	//should print error msg
-	heap_cream_free(karray,p8);
-	heap_cream_free(karray,p9);
-	heap_cream_free(karray,p10);
-	heap_cream_free(karray,p11);
-	heap_cream_free(karray,p12);
-	print_hex(G_BOOT_DRIVE);
-	//should give false, and message that we tried to free null
-	if(p7 && p13){}
-	
-	
-	heap_cream_destroy(karray);
 	
 	return;
 }

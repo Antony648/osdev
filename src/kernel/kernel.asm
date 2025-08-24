@@ -45,11 +45,12 @@ iwc4:
 	out 	0x21,al
 	out 	0xa1,al
 	
-unmask_keyboard:
+unmask_keyboard_pit:
 	in		al,0x21
-	and 	al,0xfd
+	and 	al,0xfc
 	out	 	0x21,al
 	
+	cli
 	movzx	eax,dl
 	push	eax
 	call	kernel_main

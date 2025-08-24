@@ -20,6 +20,6 @@ enable_paging_asm:
 	mov		eax,cr0
 	or		eax,0x80000000
 	mov		cr0,eax 
-	sti
+	
 	pop		ebp
 	ret

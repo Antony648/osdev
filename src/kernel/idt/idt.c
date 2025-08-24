@@ -34,6 +34,7 @@ void idt_init()
     
 	setup_idt32IKC31(0x00,sr0);  	//load address for ISR 0x00
 	setup_idt32IKC31(0x21,sr21);
+	setup_idt32IKC31(0x20,sr20);
 	//setup_idt32IKC31(0x20,sr20);
     load_idtr(&idtr_descriptor);	//load value of idt table
     
