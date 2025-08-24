@@ -120,6 +120,7 @@ struct disk* check_disk(unsigned short ata_val)
 	for(int i=0;i<450;i++)
 		asm volatile ("nop");
 	
+	print("communication set for"); print_16(ata_val);print("\n");
 	int k=ATA_WAIT;
 	while(inb(port_no+7) &0x80)
 	{
@@ -129,7 +130,7 @@ struct disk* check_disk(unsigned short ata_val)
 	}
 	//
 	outb(port_no+7,0xec);
-	
+	print("info command send for"); print_16(ata_val);print("\n");
 	//wait
 	for(int i=0;i<450;i++)
 		asm volatile ("nop");
@@ -143,6 +144,8 @@ struct disk* check_disk(unsigned short ata_val)
 	}
 	
 	uint8_t status =inb(port_no +7);
+	print("status obtained for"); print_16(ata_val);print("\n");
+	print("status:"); print_hex(status);print("\n");
 	k=ATA_WAIT;
 	while(!(status & 0x08))
 	{
@@ -155,7 +158,7 @@ struct disk* check_disk(unsigned short ata_val)
 		return rtn_val;
 	if(status & 0x08)
 	{
-		print("detected one more disk");
+		print("detected one more disk...\n");
 		rtn_val=(struct disk*)heap_cream_malloc(karray,sizeof(struct disk));
 		rtn_val->ata_code=ata_val;
 		rtn_val->type=DISK_TYPE_REAL;
