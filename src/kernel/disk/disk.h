@@ -16,13 +16,7 @@ enum FILE_SYST_TYPE
 	EXT_2
 };
 
-struct partition
-{
-	struct disk* f_disk;
-	enum FILE_SYST_TYPE fs_type;
-	uint32_t start_sect;
-	uint32_t sect_num;
-};
+
 struct disk
 {
 	DISK_TYPE type;
