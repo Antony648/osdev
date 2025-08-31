@@ -11,9 +11,13 @@ typedef uint32_t DISK_TYPE;
 enum FILE_SYST_TYPE
 {
 	FS_UNKOWN=0,
-	FAT_16,
-	FAT_32,
-	EXT_2
+	FAT_12=0x01,
+	FAT_16_L32=0x04,
+	FAT_16_G32=0x06,
+	FAT_16_LBA=0x0e,
+	FAT_32_LBA=0x0c,
+	LINUX_NATIVE=0x83,
+	
 };
 
 

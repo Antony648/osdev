@@ -98,8 +98,26 @@ jmp		jmp_here_rel	;0x1c00-4 because we want to jump to the very next instruction
 jmp_here:
 					
 ;code for copying vbr to 0x7c00
+find_boot:
+	mov 	si,entry1
+	mov		cx,0x04
+loop_b:
+	mov		al,[si]
+	cmp		al,0x80
+	je		found_b
+	add		si,0x10
+	dec		cx
+	jnz		loop_b
+fin:	
+	jmp		$
+found_b:
+	add		si,0x08
+	mov		ax,word [si]
+	mov		word [lba_save],ax
+	mov		ax, word [si+0x02]
+	mov		word[lba_save +0x02],ax
 ;we try lba if fail we fallback to chs
-	mov		dword [lba_save],1	;for now we hardcode the value as we know
+	;mov		dword [lba_save],1	;for now we hardcode the value as we know
 lba_call:
 	call 	lba_setup
 	mov		si,dap
@@ -135,7 +153,7 @@ entry1:
 	starthead:		db	0x00
 	startsector:	db 	0x01
 	startcylind:	db	0x00
-	parttable:		db	0x06
+	parttable:		db	0x0e
 	endhead:		db 	0xff
 	endsect:		db  0xff
 	endcylind:		db	0xff

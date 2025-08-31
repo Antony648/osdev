@@ -207,6 +207,7 @@ void disk_search_and_init()
 			index++;
 		}
 	}
+	heap_cream_free(karray,buf);
 	//motherlobe should contain possible disks as entries
 }
 	
