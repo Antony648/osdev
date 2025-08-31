@@ -45,35 +45,32 @@ chs:
 ;lba at lba_save
 	
 	mov		ah, 0x08
-	
 	int		0x13
 	jc		.error
 	
 	xor		ax,ax
 	;inc		dh		;head+1 actual value in dh
 	mov		bl,dh		;haed in bl
-	and		cl,0x3f	;sector in cl
-	mov		ax,word [lba_save]
+	mov		cl,al	;sectors per track
+	mov		ax,word [lba_save+0x02]
+	mov		dx,word [lba_save]
 	
-	xor 	ch,ch	
+	xor 	ch,ch
+	
 	div		cx
 	inc		dx
 	mov		cl,dl	
 	;cl contains  lba%s+1 ax contains lba/s
 	xor		bh,bh
+	xor 	dx,dx
 	div		bx
 	;dx contains lba/s%h ax contains lab/s/h
 	
 	mov		ch,al
 	shl 	ah,6
 	and		cl,0x3f
-	and		cl,ah
+	or		cl,ah
 	mov		dh,dl
-	
-	
-	
-	
-		
 	
 	ret
 .error:
