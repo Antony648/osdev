@@ -12,5 +12,5 @@ struct partition
 	struct partition* next;
 };
 struct partition* disk_partition_scanner(struct disk*);
-
+void scan_part_all_disks();
 #endif

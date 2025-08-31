@@ -2,6 +2,7 @@
 #define DISK_H
 
 #include <stdint.h>
+#include "../file_syst/partitions.h"
 
 #define ATA_WAIT 100000
 typedef uint32_t DISK_TYPE;
@@ -37,6 +38,7 @@ struct disk
 	
 	uint32_t sect_size;
 	uint32_t sect_count;
+	struct partition* link_list;
 	
 	
 };
