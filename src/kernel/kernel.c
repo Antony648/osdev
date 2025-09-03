@@ -9,6 +9,7 @@
 #include "./disk/disk.h"
 #include "./time/time.h"
 #include "./disk/disk_stream.h"
+#include "./file_syst/partitions.h"
 
 extern void problem21();
 extern void enable_interrupts();
@@ -175,13 +176,17 @@ void kernel_main(uint8_t boot_drive)
 	print("printing info obtained\n\n");
 	disk_debug_print();
 	
+	print("searching for partitions..\n");
+	scan_part_all_disks();
+	
+	partition_debug();
+	
+	
 	enable_interrupts();
 	print("interrupts enabled....\n");
 	
-	sleep(3);
-	print("hello");
-	sleep(3);
-	print("hello");
+	
+	
 	
 	
 	return;

@@ -2,8 +2,8 @@ ASM=nasm
 BUILD_DIR=build
 SRC_DIR=src
 FLAGS=  -g 	-ffreestanding	-falign-jumps -falign-functions -falign-labels -falign-loops -fstrength-reduce  -fomit-frame-pointer -finline-functions -Wno-unused-function -fno-builtin -Werror -Wno-unused-label -Wno-cpp -Wno-unused-parameter -nostdlib -nostartfiles -nodefaultlibs -Wall -O0 -Iinc
-KERNEL_FILES= ./build/kernel/kernel.asm.o  ./build/kernel/kernel.o  ./build/kernel/idt/idt.o  ./build/kernel/essentials/essentials.o  ./build/kernel/idt/idt.asm.o ./build/kernel/isr/isr.asm.o ./build/kernel/io/io.asm.o ./build/kernel/isr/isr.o ./build/kernel/heap/heap.o ./build/kernel/heap/kheap.o ./build/kernel/paging/paging.asm.o ./build/kernel/paging/paging.o ./build/kernel/disk/disk.o ./build/kernel/disk/disk_stream.o ./build/kernel/string/string.o ./build/kernel/ctype/ctype.o ./build/kernel/heap/heap32.o ./build/kernel/heap/heap_cream.o ./build/kernel/pit/pit.o ./build/kernel/time/time.o
-.PHONY: all mbr bootloader kernel clean kernel_asm_o kernel_o isr_asm_o isr_o idt_asm_o idt_o essentials_o  paging_asm_o paging_o disk_o  disk_stream_o  string_o ctype_o heap32_o heap_cream_o pit_o time_o
+KERNEL_FILES= ./build/kernel/kernel.asm.o  ./build/kernel/kernel.o  ./build/kernel/idt/idt.o  ./build/kernel/essentials/essentials.o  ./build/kernel/idt/idt.asm.o ./build/kernel/isr/isr.asm.o ./build/kernel/io/io.asm.o ./build/kernel/isr/isr.o ./build/kernel/heap/heap.o ./build/kernel/heap/kheap.o ./build/kernel/paging/paging.asm.o ./build/kernel/paging/paging.o ./build/kernel/disk/disk.o ./build/kernel/disk/disk_stream.o ./build/kernel/string/string.o ./build/kernel/ctype/ctype.o ./build/kernel/heap/heap32.o ./build/kernel/heap/heap_cream.o ./build/kernel/pit/pit.o ./build/kernel/time/time.o ./build/kernel/file_syst/partitions.o
+.PHONY: all mbr bootloader kernel clean kernel_asm_o kernel_o isr_asm_o isr_o idt_asm_o idt_o essentials_o  paging_asm_o paging_o disk_o  disk_stream_o  string_o ctype_o heap32_o heap_cream_o pit_o time_o partitions_o
 all:	kernel bootloader  mbr
 	rm  $(BUILD_DIR)/final/os.bin 
 	dd if=$(BUILD_DIR)/bootloader/mbr.bin >> $(BUILD_DIR)/final/os.bin 
@@ -14,7 +14,7 @@ all:	kernel bootloader  mbr
 	#sudo cp	./test.txt ./mount/disk
 	#sudo umount ./mount/disk
 
-kernel:	kernel_asm_o	kernel_o 	idt_asm_o 	idt_o  essentials_o  isr_asm_o  io_asm_o   isr_o     heap_o  kheap_o  paging_asm_o paging_o  disk_o disk_stream_o  string_o ctype_o heap32_o heap_cream_o pit_o time_o
+kernel:	kernel_asm_o	kernel_o 	idt_asm_o 	idt_o  essentials_o  isr_asm_o  io_asm_o   isr_o     heap_o  kheap_o  paging_asm_o paging_o  disk_o disk_stream_o  string_o ctype_o heap32_o heap_cream_o pit_o time_o partitions_o
 	i686-elf-ld  -g -relocatable $(KERNEL_FILES)  -o  $(BUILD_DIR)/kernel/kernelreloc.o
 	i686-elf-gcc -T $(SRC_DIR)/linker.ld -o $(BUILD_DIR)/kernel/kernel.bin $(FLAGS) -ffreestanding -O0 -nostdlib  $(BUILD_DIR)/kernel/kernelreloc.o
 		
@@ -85,6 +85,9 @@ pit_o: $(SRC_DIR)/kernel/pit/pit.c
 time_o: $(SRC_DIR)/kernel/time/time.c
 	i686-elf-gcc -I ./src	$(FLAGS) -c -std=gnu99 $(SRC_DIR)/kernel/time/time.c  -o $(BUILD_DIR)/kernel/time/time.o
 
+partitions_o: $(SRC_DIR)/kernel/file_syst/partitions.c
+	i686-elf-gcc -I ./src	$(FLAGS) -c -std=gnu99 $(SRC_DIR)/kernel/file_syst/partitions.c  -o $(BUILD_DIR)/kernel/file_syst/partitions.o
+
 
 clean:
 	rm -rf $(BUILD_DIR)/bootloader/boot.bin
@@ -99,5 +102,6 @@ clean:
 	rm -rf $(BUILD_DIR)/kernel/string/*
 	rm -rf $(BUILD_DIR)/kernel/ctype/*
 	rm -rf $(BUILD_DIR)/kernel/pit/*
-	rm -rf $(BUILD_DIR)/kerne/time/*
+	rm -rf $(BUILD_DIR)/kernel/time/*
+	rm -rf $(BUILD_DIR)/kernel/file_syst/*
 	find $(BUILD_DIR)/kernel/ -maxdepth 1 -type f -delete 

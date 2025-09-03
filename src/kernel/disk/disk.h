@@ -2,7 +2,7 @@
 #define DISK_H
 
 #include <stdint.h>
-#include "../file_syst/partitions.h"
+
 
 #define ATA_WAIT 100000
 typedef uint32_t DISK_TYPE;
@@ -11,17 +11,18 @@ typedef uint32_t DISK_TYPE;
 #define DISK_TYPE_VIRTUAL 1
 enum FILE_SYST_TYPE
 {
-	FS_UNKOWN=0,
+	FS_UNKNOWN=0,
 	FAT_12=0x01,
 	FAT_16_L32=0x04,
 	FAT_16_G32=0x06,
 	FAT_16_LBA=0x0e,
 	FAT_32_LBA=0x0c,
+	FAT_32_CHS=0x0b,
 	LINUX_NATIVE=0x83,
 	
 };
 
-
+#include "../file_syst/partitions.h"
 struct disk
 {
 	DISK_TYPE type;
