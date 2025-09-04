@@ -1,9 +1,9 @@
 #ifndef PATH_PARSER_H
 #define PATH_PARSER_H
-#include "../disk/disk.h"
+#include "./virtual_file.h"
 struct path_head
 {
-	int disk_id;
+	struct mount_point_ent* mnt_pnt;
 	struct path_body* first;
 	
 };

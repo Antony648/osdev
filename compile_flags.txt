@@ -1,0 +1,12 @@
+-std=gnu11
+
+-ffreestanding
+-nostdinc
+-m32
+
+-I ./src/kernel/
+-I/home/anto/opt/cross/lib/gcc/i686-elf/10.2.0/include
+-I/home/anto/opt/cross/lib/gcc/i686-elf/10.2.0/include-fixed
+
+
+

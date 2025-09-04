@@ -1,6 +1,7 @@
-#include "path_parser.h"
+#include "./path_parser.h"
 #include  "../ctype/ctype.h"
 #include "../heap/heap_cream.h"
+
 uintptr_t karray[5];
 
 /*struct path_head
@@ -28,28 +29,27 @@ static char* gen_str(char*target,int start,int end)
 struct path_head* path_llist_gen(const char* target)
 {
 	heap_cream_init(karray);
-	if(!isdigit(target[0]))
-		return NULL;
-	if(target[1]!=':' || target[2] !='/')
+	
+	if(target[0] !='/')
 		return NULL;
 	int j=0;
 	//we can create a head at this point
-	struct path_head* head=(struct path_head*)heap_cream_malloc(sizeof(struct path_head));
-	head->disk_id=char_to_int(target[0]);
-	if( target[3]=='\0')
+	struct path_head* head=(struct path_head*)heap_cream_malloc(karray,sizeof(struct path_head));
+	head->mnt_pnt=get_mount_point(target); //returns the mount point of the start
+	if( target[1]=='\0')
 	{
 		head->first=NULL;
 		return head;
 	}
 	
-	struct path_body* pb=(struct path_body*)heap_cream_malloc(sizeof(struct path_body));
+	struct path_body* pb=(struct path_body*)heap_cream_malloc(karray,sizeof(struct path_body));
 	head->first=pb;
 	
 	struct path_body* cur=pb;struct path_body* nex=NULL;
 	pb->next=NULL;
 	int start_index,end_index;char* temp;
 	
-	for(int i=2;target[i];i++)
+	for(int i=0;target[i];i++)
 	{
 		if(target[i]=='/')
 		{
@@ -65,13 +65,13 @@ struct path_head* path_llist_gen(const char* target)
 			if(start_index ==end_index)		//prevents extra path body for a path that ends in /
 				continue;	
 			
-			temp=gen_str(target,start_index,end_index);
+			temp=gen_str((char*)target,start_index,end_index);
 			if(temp)
 				cur->path_content=temp;
 			if(target[j]!='\0')
 			{
 				//not end yet
-				nex=(struct path_body*)heap_cream_malloc(sizeof(struct path_body));
+				nex=(struct path_body*)heap_cream_malloc(karray,sizeof(struct path_body));
 				cur->next=nex;
 				cur=nex; nex=NULL;
 			}
@@ -92,15 +92,15 @@ static void path_body_free(struct path_body* body)
 {
 	if(body->next !=NULL)
 		path_body_free(body->next);
-	heap_cream_free(body->path_content);
-	heap_cream_free(body);
+	heap_cream_free(karray,body->path_content);
+	heap_cream_free(karray,body);
 	return;
 }
 void path_llist_free(struct path_head* head)
 {
 		if(head->first!=NULL)
 			path_body_free(head->first);
-		heap_cream_free(head);	
+		heap_cream_free(karray,head);	
 		return;
 }
 struct path_body* path_get_first(struct path_head* head)
