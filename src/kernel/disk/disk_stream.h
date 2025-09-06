@@ -8,7 +8,7 @@ struct disk_stream
 	uint32_t pos;
 	struct disk* disk_struct;
 };
-struct disk_stream* init_disk_stream(uint32_t disk_id);
+struct disk_stream* init_disk_stream(struct disk* disk);
 void disk_stream_seek(struct disk_stream* ds, uint32_t position);
 void get_bytes_from_disk( struct disk_stream *ds, uint32_t no_bytes, uint8_t* ram_location);
 void free_disk_stream(struct disk_stream* ds);

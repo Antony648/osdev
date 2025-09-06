@@ -3,7 +3,7 @@
 #include "../disk/disk.h"
 #include <stdint.h>
 #include "../date_time/date_time.h"
-#define NAME_MAX 225	
+#define NAME_MAX 32	
 #define MAX_MOUNT 32
 enum FILE_TYPE
 {
@@ -33,6 +33,7 @@ struct mount_point_ent
 {
 	struct file_desc* root;		//subdirectory that is going to be mounted
 	const char* path;					//path in currently mounted directory where we mount the subdirectory
+	struct partition* partition;
 	struct disk* disk;		
 };
 struct file_operations
@@ -63,6 +64,12 @@ struct file_desc
 	struct mount_point_ent* mnt_pnt;	//could have used a uint8_t and used it for storing disk no
 										//but i think it would be too much low level for a file for disk info 
 										//i wanted to abstract it away.....
+	//heirarchical structuring
+	struct file_desc* parent;
+	struct file_desc* first_child;
+	struct file_desc* sibling;
+	uint32_t refcount;
 };
+struct partition* detect_native_part();
 struct mount_point_ent* get_mount_point(const char* path);
 #endif

@@ -3,6 +3,8 @@
 #include <stddef.h>
 #include "../ctype/ctype.h"
 #include "../heap/heap_cream.h"
+#include "../disk/disk_stream.h"
+#include "partitions.h"
 #include <stdint.h>
 
 uintptr_t karray_vfs[5]={0,0,0,0,0};
@@ -10,7 +12,44 @@ extern struct disk* motherlobe[5];
 
 //implement core vfs 
 struct mount_point_ent* mindflayer[MAX_MOUNT];
+static int oemi_scan(struct partition* dexter)
+{
+	
+	struct disk_stream* ds=init_disk_stream(0);
+ 	disk_stream_seek( ds, dexter->start_sect*motherlobe[0]->sect_size +0x3);
+ 	char oemi[9]={0};
+	get_bytes_from_disk(ds,8, (uint8_t*)&oemi);
+	
+ 	free_disk_stream(ds);
+ 	return !strncmp(oemi, "GEN32 OS", 8);
+}
+struct partition* detect_native_part()
+{
+	//scans all partitions of motherlobe to find out which one is bootable
+	struct partition* k=motherlobe[0]->link_list;
+	struct partition* rtn_val=NULL;
+	while(k)
+	{
+		enum FILE_SYST_TYPE k_fs=k->fs_type;
+		if(k_fs==FAT_16_LBA || k_fs ==FAT_16_G32 || k_fs ==FAT_16_L32)
+		{
+			if(k->is_bootable)
+			{
+				if(!rtn_val)
+					rtn_val=k;
+				else      //two bootable fat16
+				 if(oemi_scan(rtn_val))
+				 	return rtn_val;
+				 else
+				 	rtn_val=k;
 
+			}
+		}
+		
+		k=k->next;
+	}
+	return  rtn_val;
+}
 void os_native_main_mount()
 {
 	//we aim to set fat16 root (os native) as our main mount at /

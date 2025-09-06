@@ -1,6 +1,7 @@
 #ifndef FAT16_H
 #define FAT16_H 
 #include "./virtual_file.h"
+#include "partitions.h"
 #include <stdint.h>
 
 struct fat_16_root_dir_ent
@@ -26,7 +27,7 @@ int fat16_open(struct file_desc* file);
 int fat16_close(struct file_desc* file);
 int fat16_read(struct file_desc* file,uint32_t offset,uint32_t len,char* buffer);
 int fat16_write(struct file_desc* file,uint32_t offset,uint32_t len,char* buffer);
-struct file_desc* get_root_fat16(uint32_t disk_id);
+
 
 const struct file_operations fat16_fops=
 {
@@ -36,3 +37,5 @@ const struct file_operations fat16_fops=
 	.write=fat16_write
 };
 #endif
+struct file_desc* get_root_fat16(struct partition* partition);
+struct file_desc* get_root_child(struct partition* partition);

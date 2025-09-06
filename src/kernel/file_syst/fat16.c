@@ -31,7 +31,7 @@ static void fat16tovfs(struct file_desc* fd,struct fat_16_root_dir_ent* dr)
 	fd->size=dr->file_size;
 	//set date time
 	decode_datetime(&fd->create, dr->create_date,dr->create_time);
-	decode_datetime(&fd->update, dr->last_modified_date,dr->last_modified_date);
+	decode_datetime(&fd->update, dr->last_modified_date,dr->last_modified_time);
 	decode_datetime(&fd->accessed, dr->last_access_date, 0);
 	//filetype setting
 	if(dr->attr & 0x10)
@@ -57,29 +57,32 @@ int fat16_write(struct file_desc* file,uint32_t offset,uint32_t len,char* buffer
 {
 	return 0;
 }
-struct file_desc* get_root_fat16(uint32_t disk_id)
+struct file_desc* get_root_fat16(struct partition* partition)
 {
 	//gets the file descriptor of a root partition using direct access
-	struct disk_stream* ds=NULL;
-	ds=init_disk_stream(disk_id);
-	uint16_t res_sect,sect_per_fat,bytes_per_sect;
+	struct disk_stream* ds=init_disk_stream(partition->f_disk);
+	uint16_t res_sect,sect_per_fat,bytes_per_sect,rootentcount;
 	uint8_t fat_copies;
 
- 	disk_stream_seek(ds, 0x20b);
+	uint32_t offset=partition->start_sect* partition->f_disk->sect_size;
+ 	disk_stream_seek(ds, offset +0x0b);
 	get_bytes_from_disk( ds, 2, (uint8_t*)&bytes_per_sect);
 
-	disk_stream_seek(ds, 0x20e);
+	disk_stream_seek(ds, offset+ 0x0e);
 	get_bytes_from_disk(ds, 2, (uint8_t*)&res_sect);
 
-	disk_stream_seek(ds, 0x210);
+	disk_stream_seek(ds, offset + 0x10);
 	get_bytes_from_disk(ds, 1, (uint8_t*)&fat_copies);
 
-	disk_stream_seek(ds, 0x216);
+	disk_stream_seek(ds, offset + 0x011);
+	get_bytes_from_disk(ds, 2, (uint8_t*)&rootentcount);
+
+	disk_stream_seek(ds,  offset + 0x16);
 	get_bytes_from_disk(ds, 2, 	(uint8_t*)&sect_per_fat);
 
 	//calculate the offset in disk where we can get data
 	uint32_t root_dir_sect= res_sect +(fat_copies*sect_per_fat);
-	root_dir_sect*= sect_per_fat;	
+	root_dir_sect*= bytes_per_sect;	
 
 	//start of root dir sector in bytes or in other words offset in disk 
 	//that has first  file's file_descriptor

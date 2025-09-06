@@ -29,10 +29,10 @@ int read_single_sect_disk(uint32_t lba, void* buf)
 		return 0;
 }
 */
-struct disk_stream* init_disk_stream(uint32_t disk_id)
+struct disk_stream* init_disk_stream(struct disk* disk)
 {
 	struct disk_stream *ds=kzalloc(sizeof(struct disk_stream));
-	struct disk* disk1=get_disk(disk_id);
+	struct disk* disk1=disk;
 	if (!disk1 )
 		return NULL;
 	ds->disk_struct=disk1;
