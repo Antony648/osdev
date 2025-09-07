@@ -2,7 +2,7 @@
 #include "../heap/heap_cream.h"
 #include "virtual_file.h"
 
-uintptr_t karray_pp[5];
+
 extern struct mount_point_ent* mindflayer[MAX_MOUNT];
 
 /*struct path_head
@@ -21,7 +21,7 @@ static char* gen_str(char*target,int start,int end)
 	if(end<start)			//if end is less than start it will cause a large unsigned 
 		return NULL;
 	size_t size=(size_t)(end-start+1);
-	char *str=heap_cream_malloc(karray_pp,size);
+	char *str=heap_cream_malloc(size);
 	for(int i=0;i<size-1;i++)
 		str[i]=target[start+i];
 	str[size-1]='\0';
@@ -31,7 +31,7 @@ struct path_head* path_llist_gen(const char* target)
 {
 	//we expect full path form the main mount point 
 	//so path head will always have default mount point
-	heap_cream_init(karray_pp);
+	
 	
 	if(target[0] !='/')
 		return NULL;
@@ -42,7 +42,7 @@ struct path_head* path_llist_gen(const char* target)
 
 	if(!goku)
 		return NULL;
-	struct path_head* head=(struct path_head*)heap_cream_malloc(karray_pp,sizeof(struct path_head));
+	struct path_head* head=(struct path_head*)heap_cream_malloc(sizeof(struct path_head));
 	head->mnt_pnt=goku;
 	if( target[1]=='\0')
 	{
@@ -50,7 +50,7 @@ struct path_head* path_llist_gen(const char* target)
 		return head;
 	}
 	
-	struct path_body* pb=(struct path_body*)heap_cream_malloc(karray_pp,sizeof(struct path_body));
+	struct path_body* pb=(struct path_body*)heap_cream_malloc(sizeof(struct path_body));
 	head->first=pb;
 	
 	struct path_body* cur=pb;struct path_body* nex=NULL;
@@ -79,7 +79,7 @@ struct path_head* path_llist_gen(const char* target)
 			if(target[j]!='\0')
 			{
 				//not end yet
-				nex=(struct path_body*)heap_cream_malloc(karray_pp,sizeof(struct path_body));
+				nex=(struct path_body*)heap_cream_malloc(sizeof(struct path_body));
 				cur->next=nex;
 				cur=nex; nex=NULL;
 			}
@@ -89,7 +89,7 @@ struct path_head* path_llist_gen(const char* target)
 		if(head->first->path_content==NULL)
 		{
 			//only for a special condition where we have only a disk no
-			heap_cream_free(karray_pp,(void*)(head->first));
+			heap_cream_free((void*)(head->first));
 			head->first=NULL;
 		}
 	}
@@ -103,8 +103,8 @@ static void path_body_free(struct path_body* body)
 	while(cur!=NULL)
 	{
 		next=cur->next;
-		heap_cream_free(karray_pp,cur->path_content);
-		heap_cream_free(karray_pp,cur);
+		heap_cream_free(cur->path_content);
+		heap_cream_free(cur);
 		cur=next;
 	}
 	
@@ -114,7 +114,7 @@ void path_llist_free(struct path_head* head)
 {
 		if(head->first!=NULL)
 			path_body_free(head->first);
-		heap_cream_free(karray_pp,head);	
+		heap_cream_free(head);	
 		return;
 }
 struct path_body* path_get_first(struct path_head* head)

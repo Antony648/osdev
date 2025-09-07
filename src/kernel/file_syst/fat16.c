@@ -3,11 +3,12 @@
 #include "../disk/disk_stream.h"
 #include "../string/string.h"
 #include <stdint.h>
+#include "../ctype/ctype.h"
 #include "../heap/heap_cream.h"
 #include "virtual_file.h"
 
 
-uintptr_t karray_fat_16[5]={0,0,0,0,0};
+
 
 static void decode_datetime(struct vfs_timestamp* vfs, uint16_t date,uint16_t time)
 {
@@ -64,7 +65,7 @@ struct file_desc* get_root_fat16(struct partition *partition)
 {
 	//the job is to create a fake file descriptor for root
 	
-	struct file_desc* rtn_val=heap_cream_malloc(karray_fat_16, sizeof(struct file_desc));
+	struct file_desc* rtn_val=heap_cream_malloc( sizeof(struct file_desc));
 	rtn_val->type=SUB_DIR;
 	rtn_val->fs_hook=NULL;
 	rtn_val->file_id=0;
@@ -77,7 +78,18 @@ struct file_desc* get_root_fat16(struct partition *partition)
 	return rtn_val;
 
 }
+static int fat16_file_name_cmp(char* file_name,char* test_name,size_t len)
+{
+	
 
+	for(int i=0;i<len;i++)
+	{
+		char k=(i<strlen(test_name))?toupper(test_name[i]):' ';
+		if(toupper(file_name[i])!=k)
+			return 0;
+	}
+	return 1;
+}
 struct file_desc* get_root_child(struct partition* partition,char* name,char* extension)
 {
 	//gets the file descriptor of an immediate child of a root,
@@ -110,27 +122,33 @@ struct file_desc* get_root_child(struct partition* partition,char* name,char* ex
 	//start of root dir sector in bytes or in other words offset in disk 
 	//that has first  file's file_descriptor
 
-	struct fat_16_root_dir_ent* first_fat16_ent=heap_cream_malloc(karray_fat_16,sizeof(struct fat_16_root_dir_ent));
-	struct file_desc* fat16_root=NULL;
+	struct fat_16_root_dir_ent* first_fat16_ent=heap_cream_malloc(sizeof(struct fat_16_root_dir_ent));
+	if(!first_fat16_ent)
+		goto exit;
+	struct file_desc* fat16_root_child=NULL;
 	//scan all root entries to find the child
 
-	uint8_t i=0;
+	uint16_t i=0;
 	for(;i<rootentcount;i++)
 	{
 		disk_stream_seek(ds, root_dir_sect+(i*32));
 		get_bytes_from_disk(ds, 32,(uint8_t*)first_fat16_ent);
 
-		if(strlen(name)==strlen(first_fat16_ent->name))
-			if(!strncmp(name, first_fat16_ent->name, strlen(name)) && !strncmp(extension, first_fat16_ent->extension,3))
-				{
-					fat16_root=heap_cream_malloc(karray_fat_16, sizeof(struct file_desc));
-					fat16tovfs(fat16_root, first_fat16_ent);
-					break;
-				}
+		if(first_fat16_ent->name[0]== 0x00 || first_fat16_ent->name[0]== 0xe5)
+			continue;
+		if(fat16_file_name_cmp( first_fat16_ent->name,name,8) && fat16_file_name_cmp(extension, first_fat16_ent->extension,3))
+			{
+				fat16_root_child=heap_cream_malloc( sizeof(struct file_desc));
+				if(!fat16_root_child)
+					goto exit2;
+				fat16tovfs(fat16_root_child, first_fat16_ent);
+				break;
+			}
 
 	}
-
-
+exit2:
+heap_cream_free((void*)first_fat16_ent);
+exit:
 	free_disk_stream(ds);
 
 	
@@ -138,7 +156,7 @@ struct file_desc* get_root_child(struct partition* partition,char* name,char* ex
 	//we have file desc struct and root dir ent for first file
 
 	
-	heap_cream_free(karray_fat_16 ,(void*)first_fat16_ent);
+	
 
-	return  fat16_root;
+	return  fat16_root_child;
 }

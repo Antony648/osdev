@@ -10,16 +10,16 @@ void help_me_mary_mother_of_god()
 {
 	mothermary=kzalloc(1);
 }
-void heap_cream_init(uintptr_t* karray)
+void heap_cream_init(uintptr_t* mothermary)
 {
 	for(int i=0;i<MAX_4KB_HEAP;i++)
-		karray[i]=0;
+		mothermary[i]=0;
 }
 
 void* heap_cream_malloc(size_t size)
 {
-	uintptr_t* karray=mothermary;
-	//uint32_t* karray=*karray_addr;
+	
+	//uint32_t* mothermary=*mothermary_addr;
 	if(size >TOTAL_BYTES_AVAIL)
 	{
 		print("use kzalloc for blocks greater than 3968\n");
@@ -27,9 +27,9 @@ void* heap_cream_malloc(size_t size)
 	}
 	void* rtn_val=NULL;
 	int i=0;
-	for(;i<MAX_4KB_HEAP &&karray[i]!=0 ;i++)
+	for(;i<MAX_4KB_HEAP &&mothermary[i]!=0 ;i++)
 	{
-		rtn_val=malloc_32((void*)karray[i],size);	//tries to allocate pages in all tables
+		rtn_val=malloc_32((void*)mothermary[i],size);	//tries to allocate pages in all tables
 		if(rtn_val)
 			return rtn_val;
 	}
@@ -39,31 +39,31 @@ void* heap_cream_malloc(size_t size)
 		print("reached max page limit");
 		return NULL;		//we cannot do anything 
 	}
-	karray[i]=(uintptr_t)kzalloc(1);	//we allocate a page and give it to the last free address
-	if(! karray[i])
+	mothermary[i]=(uintptr_t)kzalloc(1);	//we allocate a page and give it to the last free address
+	if(! mothermary[i])
 	{
 		print("kzalloc for new page failed");
 		return NULL;
 	}
-	table_guard_set((void*)karray[i]);
-	rtn_val=malloc_32((void*)karray[i],size);	//allocate space in new block
+	table_guard_set((void*)mothermary[i]);
+	rtn_val=malloc_32((void*)mothermary[i],size);	//allocate space in new block
 	return rtn_val;
 }
 
 
 static void heap_cream_kill(int index)
 {
-	uintptr_t* karray=mothermary;
-	kfree((void*)karray[index]);karray[index]=0;
+	
+	kfree((void*)mothermary[index]);mothermary[index]=0;
 }
 
-/*static void heap_cream_check_kill(uintptr_t* karray)
+/*static void heap_cream_check_kill(uintptr_t* mothermary)
 {
 	for(int i=0;i<MAX_4KB_HEAP;i++)
 	{
-		if(!karray[i])
+		if(!mothermary[i])
 		{
-			uint8_t* table=karray[i];
+			uint8_t* table=mothermary[i];
 			int j;
 			for(j=0;j<124;j++)
 			{
@@ -71,14 +71,14 @@ static void heap_cream_kill(int index)
 					break;
 			}
 			if(j==124)
-				heap_cream_kill(karray,i);
+				heap_cream_kill(mothermary,i);
 		}
 	}
 }*/
 static void heap_cream_single_chk_kill(int index)
 {
-	uintptr_t* karray=mothermary;
-	uint8_t* table=(uint8_t*)karray[index];
+	
+	uint8_t* table=(uint8_t*)mothermary[index];
 			int j;
 			for(j=0;j<124;j++)
 			{
@@ -91,7 +91,7 @@ static void heap_cream_single_chk_kill(int index)
 
 bool heap_cream_free(void* ptr)
 {
-	uintptr_t* karray=mothermary;
+
 		//we need to find which page block we have it
 	if(ptr==NULL)
 	{
@@ -99,15 +99,15 @@ bool heap_cream_free(void* ptr)
 		return false;
 	}
 	int i=0;
-	//uint32_t* karray=*karray_addr;
+	//uint32_t* mothermary=*mothermary_addr;
 	uintptr_t base; uintptr_t p;
-	for(;i<MAX_4KB_HEAP && karray[i]!=0  ;i++)
+	for(;i<MAX_4KB_HEAP && mothermary[i]!=0  ;i++)
 	{
-		base=(uintptr_t)karray[i];p=(uintptr_t)ptr;
+		base=(uintptr_t)mothermary[i];p=(uintptr_t)ptr;
 		if((p>=base) && (p-base <4096))	//pointer is inside that block
 		{
 			
-			if(heap32_free((void*)karray[i],ptr))
+			if(heap32_free((void*)mothermary[i],ptr))
 			{
 				//if we successfully freed the memory, we can now possibly free the page too...
 				heap_cream_single_chk_kill(i); 
@@ -119,9 +119,9 @@ bool heap_cream_free(void* ptr)
 	//print("heap_cream.c:heap_cream_free:invalid arg\n");
 	return false;
 }
-void heap_cream_destroy(uintptr_t * karray)
+void heap_cream_destroy(uintptr_t * mothermary)
 {
-	for(int i=0;i<MAX_4KB_HEAP &&karray[i] !=0; i++)
-		{kfree((void*)karray[i]); karray[i]=0;}
+	for(int i=0;i<MAX_4KB_HEAP &&mothermary[i] !=0; i++)
+		{kfree((void*)mothermary[i]); mothermary[i]=0;}
 }
 

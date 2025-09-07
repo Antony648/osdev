@@ -9,7 +9,7 @@
 #include "./fat16.h"
 #include <stdint.h>
 
-uintptr_t karray_vfs[5]={0,0,0,0,0};
+
 extern struct disk* motherlobe[5];
 //extern struct file_operations* big_brother;
 //implement core vfs 
@@ -67,7 +67,7 @@ struct partition* detect_native_part()
 struct mount_point_ent* os_native_main_mount()
 {
 	//we aim to set fat16 root (os native) as our main mount at /
-	struct mount_point_ent* main=(struct mount_point_ent*)heap_cream_malloc(karray_vfs, sizeof(struct mount_point_ent));
+	struct mount_point_ent* main=(struct mount_point_ent*)heap_cream_malloc(sizeof(struct mount_point_ent));
 	strncpy(main->path, "/\0", 2);
 	main->disk=motherlobe[0];
 	//should write the functions for getting file desc of the root from fat 16 and assign it to main
@@ -96,15 +96,7 @@ void init_open_file_table()
 		open_file_table[i]=NULL;
 }
 
-uint8_t hash_fnnc_oft(struct file_desc* billy)
-{
-	return 0;
-}
 
-int insert_open_file_table(struct file_desc* king_steve)
-{
-	return  0;
-}
 
 static struct mount_point_ent* single_scan(const char* block)
 {
@@ -131,10 +123,10 @@ struct mount_point_ent* get_mount_point(const char* path)
 	if(path[0]!= '/')	//we expect absolute path, and all absolute paths have / at begining 
 		return NULL; 
 
-	char *use_path=(char*)heap_cream_malloc(karray_vfs, PATH_MAX); //path max is 64 maximium size for a path in this os
+	char *use_path=(char*)heap_cream_malloc( PATH_MAX); //path max is 64 maximium size for a path in this os
 	if(!use_path)
 		return NULL;
-	
+
 	if(strlen(path)+1 > PATH_MAX)	//this makes it invalid
 		goto exit;
 	strncpy(use_path,path,strlen(path));
@@ -150,7 +142,7 @@ struct mount_point_ent* get_mount_point(const char* path)
 		use_path[i]='\0';								//makes it the new end
 	}
 exit:
-	heap_cream_free(karray_vfs, use_path);
+	heap_cream_free( use_path);
 	return  rtn_val;
 }
 
