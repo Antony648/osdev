@@ -1,9 +1,12 @@
-My OS- A hobby operating system
+GENSIS 32 OS
 
-it is a 32 bit protected mode kernel written in C and Assembly.From bootloader
+it is a 32 bit protected mode kernel primarily  created in C
+and other rudimentary parts in x86 assembly 
 it is inspired on Daniel Mcarthys course on osdev(concepts and basic understanding) 
+the codebase is completely mine,it is developed based on understanding of low-level OS concepts learned from the resources.
+ features implemented are shown below others are under development       
 #features:
-    bootloader
+    bootloader(BIOS based)
     custom GDT and IDT setup
     protected mode kernel
     heap implementation with a slab allocator(additional)
