@@ -23,7 +23,7 @@ struct fat_16_root_dir_ent
 }__attribute__((packed));
 
 
-int fat16_open(struct file_desc* file);
+int fat16_open(struct file_desc* fd);
 int fat16_close(struct file_desc* file);
 int fat16_read(struct file_desc* file,uint32_t offset,uint32_t len,char* buffer);
 int fat16_write(struct file_desc* file,uint32_t offset,uint32_t len,char* buffer);

@@ -52,7 +52,7 @@ kernel_o: $(SRC_DIR)/kernel/kernel.c
 paging_o: $(SRC_DIR)/kernel/kernel.c
 	i686-elf-gcc -I ./src	$(FLAGS) -c -std=gnu99 $(SRC_DIR)/kernel/paging/paging.c  -o $(BUILD_DIR)/kernel/paging/paging.o
 	
-paging_asm_o: $(SRC_DIR)/kernel/io/io.asm
+paging_asm_o: $(SRC_DIR)/kernel/paging/enable_paging.asm
 	$(ASM) -f elf -g $(SRC_DIR)/kernel/paging/enable_paging.asm -o $(BUILD_DIR)/kernel/paging/paging.asm.o
 
 bootloader:$(SRC_DIR)/bootloader/boot.asm
